@@ -1,11 +1,122 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello World</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Indien AQI – Prototype</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-    <h1>Hello, World!</h1>
+  <div class="app">
+    <header class="topbar">
+      <h1>Indien Luftqualität</h1>
+      <p>Prototype mit Fake-Daten – klicke eine Stadt</p>
+    </header>
+
+    <main class="layout">
+      <!-- Karte -->
+      <section class="map-wrap" aria-label="Karte Indien">
+        <!-- Hintergrund: India Silhouette (Wikimedia, frei) -->
+        <!-- NEU: echtes <img>, nicht CSS-Background -->
+<img
+  class="india-map"
+  src="https://upload.wikimedia.org/wikipedia/commons/3/38/India_blank_map.svg"
+  alt="Umrisskarte von Indien"
+/>
+
+
+        <!-- Stadt-Marker (Positionswerte sind projizierte Lat/Lon -> % ) -->
+        <button class="city" style="left:31.7%; top:26.4%;" data-city="Delhi" aria-label="Delhi" title="Delhi"></button>
+        <button class="city" style="left:16.6%; top:60.7%;" data-city="Mumbai" aria-label="Mumbai" title="Mumbai"></button>
+        <button class="city" style="left:36.1%; top:66.5%;" data-city="Hyderabad" aria-label="Hyderabad" title="Hyderabad"></button>
+        <button class="city" style="left:33.1%; top:82.3%;" data-city="Bengaluru" aria-label="Bengaluru" title="Bengaluru"></button>
+        <button class="city" style="left:42.3%; top:81.9%;" data-city="Chennai" aria-label="Chennai" title="Chennai"></button>
+        <button class="city" style="left:70.2%; top:48.0%;" data-city="Kolkata" aria-label="Kolkata" title="Kolkata"></button>
+      </section>
+
+      <!-- Seitenpanel -->
+      <aside class="sidepanel" aria-live="polite">
+        <div class="sp-header">
+          <div class="badge">AQI</div>
+          <h2 id="sp-city">Wähle eine Stadt</h2>
+          <p class="muted">Klick auf einen Punkt auf der Karte</p>
+        </div>
+
+        <div class="aqi-card">
+          <div class="aqi-value" id="sp-aqi">–</div>
+          <div class="aqi-cat" id="sp-cat">–</div>
+        </div>
+
+        <div class="detail">
+          <h3>Hinweise</h3>
+          <ul id="sp-hints">
+            <li>Dies sind Beispielwerte ohne API.</li>
+            <li>Die Farben folgen den USAQI Kategorien.</li>
+          </ul>
+        </div>
+
+        <footer class="panel-foot">
+          <span id="sp-updated">Stand: –</span>
+        </footer>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Minimal JS für Interaktion, Fake-Daten & Kategorien -->
+  <script>
+    const FAKE_DATA = {
+      "Delhi":     { aqi: 168, updated: "heute 14:10", tips: ["Empfindliche Personen reduzieren Aktivität draussen.", "Maske bei längerer Exposition erwägen."] },
+      "Mumbai":    { aqi: 72,  updated: "heute 14:05", tips: ["Leichte Aktivität ok.", "Lüften bevorzugt morgens/abends."] },
+      "Hyderabad": { aqi: 96,  updated: "heute 13:55", tips: ["Empfindliche Gruppen sollten Pausen einplanen."] },
+      "Bengaluru": { aqi: 58,  updated: "heute 14:00", tips: ["Gute Bedingungen für Sport draussen."] },
+      "Chennai":   { aqi: 81,  updated: "heute 14:02", tips: ["Moderate Luftqualität, längere Belastung meiden."] },
+      "Kolkata":   { aqi: 122, updated: "heute 13:50", tips: ["Asthmatiker vorsichtig, Inhalator bereithalten."] }
+    };
+
+    // USAQI Kategorien
+    function aqiCategory(aqi){
+      if (aqi <= 50)   return {label:"Gut",                 slug:"good"};
+      if (aqi <= 100)  return {label:"Moderat",             slug:"moderate"};
+      if (aqi <= 150)  return {label:"Ungünstig (empf.)",   slug:"usg"};
+      if (aqi <= 200)  return {label:"Ungünstig",           slug:"unhealthy"};
+      if (aqi <= 300)  return {label:"Sehr ungünstig",      slug:"very-unhealthy"};
+      return              {label:"Gefährlich",             slug:"hazardous"};
+    }
+
+    const cityButtons = document.querySelectorAll(".city");
+    const elCity   = document.getElementById("sp-city");
+    const elAQI    = document.getElementById("sp-aqi");
+    const elCat    = document.getElementById("sp-cat");
+    const elHints  = document.getElementById("sp-hints");
+    const elUpd    = document.getElementById("sp-updated");
+    const panel    = document.querySelector(".sidepanel");
+
+    cityButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const name = btn.dataset.city;
+        const data = FAKE_DATA[name];
+        if (!data) return;
+
+        const cat = aqiCategory(data.aqi);
+
+        elCity.textContent = name;
+        elAQI.textContent  = data.aqi;
+        elCat.textContent  = cat.label;
+
+        // Kategorie-Farben via Klasse
+        panel.dataset.cat = cat.slug;
+
+        // Hinweise neu setzen
+        elHints.innerHTML = "";
+        (data.tips || []).forEach(t => {
+          const li = document.createElement("li");
+          li.textContent = t;
+          elHints.appendChild(li);
+        });
+
+        elUpd.textContent = "Stand: " + data.updated;
+      });
+    });
+  </script>
 </body>
 </html>
