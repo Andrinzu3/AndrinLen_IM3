@@ -5,7 +5,7 @@
   --map-blue: #5fb0ff;
   --text: #ffffff;
   --muted: rgba(255,255,255,0.55);
-  --max-width: 1350px;
+  --max-width: 1600px;
   --gutter: 48px;
   font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
 }
@@ -17,9 +17,10 @@ html, body { margin: 0; padding: 0; }
 body {
   min-height: 100vh;
   background: 
-    radial-gradient(1200px 600px at 75% 75%, rgba(45,70,105,0.15), transparent 8%),
-    radial-gradient(900px 500px at 20% 20%, rgba(45,30,60,0.14), transparent 10%),
-    linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+    radial-gradient(600px 400px at 20% 30%, rgba(95,176,255,0.12), transparent 60%), /* hellblau links */
+    radial-gradient(500px 500px at 70% 40%, rgba(107,111,249,0.15), transparent 70%), /* violett rechts */
+    radial-gradient(800px 600px at 50% 80%, rgba(255,120,150,0.10), transparent 80%), /* rötlich unten */
+    linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%); /* Grundverlauf dunkel */
   color: var(--text);
   font-family: inherit;
   -webkit-font-smoothing: antialiased;
@@ -62,12 +63,12 @@ body {
 .hero {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 36px var(--gutter);
+  padding: 10px var(--gutter);
 }
 .hero-inner {
   display: grid;
-  grid-template-columns: minmax(320px, 1fr) 1fr;
-  gap: 48px;
+  grid-template-columns: 1.1fr 0.9fr; /* fast 50/50, Karte minimal größer */
+  gap: 10px;
   align-items: center;
   min-height: calc(100vh - 180px);
 }
@@ -81,8 +82,8 @@ body {
 }
 .map {
   position: relative;
-  width: min(90vw, 1000px);
-  max-width: 1000px;
+  width: 90%;
+  max-width: 900px;   /* etwas kleiner begrenzen */
 }
 .map img {
   width: 100%;
@@ -93,44 +94,109 @@ body {
 }
 .map-point {
   position: absolute;
-  width: 44px; height: 44px;
-  border-radius: 50%;
-  transform: translate(-50%,-50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 28px;   /* leicht größer */
+  height: 28px;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
 }
+
 .map-point .pulse {
-  width: 12px; height: 12px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: var(--map-blue);
-  box-shadow: 0 0 0 6px rgba(95,176,255,0.14);
+  background: #ff0033; /* Neonrot */
+  box-shadow:
+    0 0 10px #ff0033,
+    0 0 20px #ff0033,
+    0 0 40px #ff0033,
+    0 0 80px rgba(255,0,51,0.85);
+  animation: neonBlink 1.7s infinite alternate; /* <- Blinken */
+}
+.map-point:nth-child(2) .pulse {
+  animation-delay: 0.3s;
+}
+.map-point:nth-child(3) .pulse {
+  animation-delay: 0.6s;
+}
+@keyframes neonBlink {
+  0% {
+    opacity: 1;
+    box-shadow:
+      0 0 10px #ff0033,
+      0 0 20px #ff0033,
+      0 0 40px #ff0033,
+      0 0 80px rgba(255,0,51,0.85);
+  }
+  50% {
+    opacity: 0.55;
+    box-shadow:
+      0 0 4px #ff0033,
+      0 0 10px #ff0033,
+      0 0 20px #ff0033,
+      0 0 40px rgba(255,0,51,0.6);
+  }
+  100% {
+    opacity: 1;
+    box-shadow:
+      0 0 10px #ff0033,
+      0 0 20px #ff0033,
+      0 0 40px #ff0033,
+      0 0 80px rgba(255,0,51,0.85);
+  }
 }
 
 /* Text */
 .hero-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;       /* Desktop: rechtsbündig */
   text-align: right;
   padding-right: 40px;
+  max-width: 45ch;             /* Begrenzung für Headline + Lead */
+  margin-left: auto;           /* Container nach rechts schieben */
+  gap: 18px;                   /* Abstand zwischen Headline und Lead */
 }
+
 .headline {
-  margin: 0 0 10px 0;
-  line-height: 0.95;
+  margin: 0;
+  line-height: 72px;      /* feste Höhe pro Zeile */
   letter-spacing: -1px;
-  font-size: clamp(32px, 5.6vw, 84px);
+  font-size: 90px;        /* feste Größe für Desktop/Tablet */
 }
-.headline .accent { color: var(--accent); }
+
+.headline .accent { 
+  color: var(--accent); 
+  line-height: 0.9;
+}
 
 .headline .big { 
   display: block; 
-  color: #fff; }
+  color: #fff; 
+  font-size: 70px;        /* feste kleinere Subline */
+  line-height: 1.05;      /* engerer Zeilenabstand nur für diese Zeile */
+  white-space: nowrap;    /* bleibt auf einer Zeile */
+}
 
 .lead {
-  margin-top: 18px;
   font-size: 18px;
   color: var(--muted);
-  max-width: 38ch;
-  
+  max-width: 100%;             /* übernimmt Begrenzung von hero-copy */
 }
+
+
+/* Mobile-Anpassung */
+@media (max-width: 600px) {
+  .headline {
+    font-size: 38px;
+    line-height: 46px;
+  }
+  .headline .big {
+    font-size: 24px;
+    line-height: 1.1;
+  }
+}
+
+
 
 
 /* Footer */
