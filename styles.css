@@ -1,7 +1,7 @@
-:root{
+:root {
   --bg-1: #07060a;
   --bg-2: #081226;
-  --accent: #6b6ff9; /* blau-lila */
+  --accent: #6b6ff9;
   --map-blue: #5fb0ff;
   --text: #ffffff;
   --muted: rgba(255,255,255,0.55);
@@ -10,181 +10,142 @@
   font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
 }
 
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;
-  min-height:100%;
-  background: radial-gradient(1200px 600px at 75% 75%, rgba(45,70,105,0.15), transparent 8%),
-              radial-gradient(900px 500px at 20% 20%, rgba(45,30,60,0.14), transparent 10%),
-              linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
-  color:var(--text);
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
+/* Grundlayout */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+body {
+  min-height: 100vh;
+  background: 
+    radial-gradient(1200px 600px at 75% 75%, rgba(45,70,105,0.15), transparent 8%),
+    radial-gradient(900px 500px at 20% 20%, rgba(45,30,60,0.14), transparent 10%),
+    linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+  color: var(--text);
+  font-family: inherit;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   padding: 28px;
 }
 
 /* Header */
-.site-header{
+.site-header {
   padding: 18px 0;
   max-width: var(--max-width);
   margin: 0 auto 24px;
 }
-.header-inner{
-  display:flex;
-  align-items:center;
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 16px;
-  justify-content:space-between;
 }
-.brand{
-  display:flex;
-  flex-direction:column;
-}
-.logo{
-  font-weight:800;
-  letter-spacing:1px;
-  font-size:20px;
-}
-.tag{
-  font-size:12px;
-  color:var(--muted);
-  margin-top:4px;
-}
+.brand { display: flex; flex-direction: column; }
+.logo { font-weight: 800; font-size: 20px; letter-spacing: 1px; }
+.tag { font-size: 12px; color: var(--muted); margin-top: 4px; }
 
-/* nav */
-.main-nav{
-  display:flex;
-  gap:28px;
-  align-items:center;
+/* Navigation */
+.main-nav {
+  display: flex;
+  gap: 28px;
+  align-items: center;
 }
-.nav-link{
-  color:var(--muted);
-  text-decoration:none;
-  font-weight:400;
-  letter-spacing:0.2px;
-  padding:8px 4px;
+.nav-link {
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+  padding: 8px 4px;
 }
-.nav-link:hover{color:var(--text)}
+.nav-link:hover { color: var(--text); }
 
-/* social */
-.social{display:flex; gap:10px; align-items:center}
-.icon{
-  display:inline-flex;
-  width:30px;
-  height:30px;
-  align-items:center;
-  justify-content:center;
-  border-radius:50%;
-  background:rgba(255,255,255,0.04);
-  color:var(--muted);
-  text-decoration:none;
-  font-size:12px;
-}
-
-/* Hero layout */
-.hero{
+/* Hero */
+.hero {
   max-width: var(--max-width);
   margin: 0 auto;
   padding: 36px var(--gutter);
 }
-.hero-inner{
-  display:grid;
+.hero-inner {
+  display: grid;
   grid-template-columns: minmax(320px, 1fr) 1fr;
   gap: 48px;
-  align-items:center;
+  align-items: center;
   min-height: calc(100vh - 180px);
 }
 
-/* Map container */
-.map-wrap{
-  display:flex;
-  align-items:center;
-  justify-content:center;
+/* Map */
+.map-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding-left: 40px;
 }
-.map{
-  position:relative;
-  width: min(90vw, 1000px);   /* größer, fast volle Breite */
+.map {
+  position: relative;
+  width: min(90vw, 1000px);
   max-width: 1000px;
-  display:block;
 }
-
-.map img{
-  width:100%;
-  height:auto;
-  object-fit:contain;
-  display:block;
+.map img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
   filter: drop-shadow(0 36px 60px rgba(0,0,0,0.6));
-  /* Rahmen entfernt */
-  border-radius:0;
-  box-shadow:none;
 }
-
-
-/* Placeholder for points (so du spaeter nur noch HTML hinzufuegen musst) */
-.map-point{
-  position:absolute;
-  width:44px;
-  height:44px;
-  border-radius:50%;
-  transform:translate(-50%,-50%);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  pointer-events:auto;
+.map-point {
+  position: absolute;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  transform: translate(-50%,-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.map-point .pulse{
-  width:12px;
-  height:12px;
-  border-radius:50%;
-  background:var(--map-blue);
+.map-point .pulse {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--map-blue);
   box-shadow: 0 0 0 6px rgba(95,176,255,0.14);
 }
 
-/* Headline / copy */
-.hero-copy{
+/* Text */
+.hero-copy {
+  text-align: right;
   padding-right: 40px;
-  text-align:right;
 }
-.headline{
-  margin:0 0 10px 0;
-  font-weight:900;
-  line-height:0.95;
+.headline {
+  margin: 0 0 10px 0;
+  line-height: 0.95;
   letter-spacing: -1px;
   font-size: clamp(32px, 5.6vw, 84px);
 }
-.headline .accent{
-  color: var(--accent);
-  font-weight:700;
-}
-.headline .big{
-  display:block;
-  color: #fff;
-  font-weight:900;
+.headline .accent { color: var(--accent); }
+
+.headline .big { 
+  display: block; 
+  color: #fff; }
+
+.lead {
+  margin-top: 18px;
+  font-size: 18px;
+  color: var(--muted);
+  max-width: 38ch;
+  
 }
 
-.lead{
-  color:var(--muted);
-  margin-top:18px;
-  font-size:18px;
-  text-align:right;
-  max-width:38ch;
-}
 
 /* Footer */
-.site-footer{
+.site-footer {
   max-width: var(--max-width);
   margin: 40px auto 20px;
   padding: 12px var(--gutter);
-  color:var(--muted);
-  font-size:13px;
+  font-size: 13px;
+  color: var(--muted);
 }
 
 /* Responsive */
-@media (max-width:980px){
-  .hero-inner{ grid-template-columns: 1fr; gap:28px; }
-  .hero-copy{ text-align:left; padding-right:0; padding-left:16px; order:2 }
-  .map-wrap{ order:1; padding-left:0; justify-content:center }
-  .header-inner{ gap:12px; }
-  .main-nav{ display:none; } /* fuer mobile verstecken oder als hamburger spaeter */
+@media (max-width:980px) {
+  .hero-inner { grid-template-columns: 1fr; gap: 28px; }
+  .hero-copy { order: 2; text-align: left; padding: 0 0 0 16px; }
+  .map-wrap { order: 1; padding-left: 0; }
+  .main-nav { display: none; } /* später als Hamburger-Menü */
 }
