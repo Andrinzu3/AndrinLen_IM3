@@ -217,6 +217,7 @@ body {
   .map-wrap { order: 1; padding-left: 0; }
   .main-nav { display: none; } /* später als Hamburger-Menü */
 }
+
 /* ===== Panel-Layout (clean & smooth) ===== */
 
 /* Panel ist standardmäßig NICHT im Layout -> Text steht rechts wie vorher */
@@ -298,11 +299,13 @@ body {
   display: grid; place-items: center;
   color: var(--muted); font-size: 14px;
 }
+
 .city-footer { margin-top: 10px; text-align: right; }
 .city-name-display { font-size: 28px; }
 
+/* Beim Öffnen: Headline/Lead sofort ausblenden */
 .panel-open .hero-copy {
-  display: none;  /* nimmt sofort keinen Platz mehr ein */
+  display: none;
   opacity: 0;
   transform: translateY(8px);
   pointer-events: none;
@@ -316,18 +319,14 @@ body {
   align-items: center;
 }
 
-<<<<<<< HEAD
-.smoke-svg {
-=======
 /* Mobile: Panel volle Breite */
 @media (max-width: 980px) {
   .city-card { width: 92vw; }
   .panel-open .hero-inner { grid-template-columns: 1fr; }
 }
-<<<<<<< HEAD
+
 /* ===== Smoke Effekt (production) ===== */
 .smoke {
->>>>>>> 5a3803ce77db07d9a0af6e6548e8b96602cf125c
   position: fixed;
   left: 0; right: 0; bottom: 0;
   height: 45vh;
@@ -336,17 +335,6 @@ body {
   filter: blur(10px) contrast(1.06);
   will-change: transform;
 }
-<<<<<<< HEAD
-@keyframes smokeDrift {
-  from { transform: translateY(4%) }
-  to   { transform: translateY(-20%) }
-}
-
-/* Mobile: Panel volle Breite */
-@media (max-width: 980px) {
-  .city-card { width: 92vw; }
-  .panel-open .hero-inner { grid-template-columns: 1fr; }
-=======
 
 /* 1. & 2. Schicht */
 .smoke::before,
@@ -389,7 +377,4 @@ body {
   0%   { transform: translate(-50%, 10%) rotate(0deg)   scale(1); }
   50%  { transform: translate(-50%, -8%) rotate(2deg)   scale(1.03); }
   100% { transform: translate(-50%, -28%) rotate(-2deg) scale(1.06); }
->>>>>>> 5a3803ce77db07d9a0af6e6548e8b96602cf125c
 }
-=======
->>>>>>> 3b2446d78480c9c1d5969a7af4749b4a50894bdf
