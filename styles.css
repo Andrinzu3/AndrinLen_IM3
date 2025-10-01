@@ -321,23 +321,56 @@ body {
   .city-card { width: 92vw; }
   .panel-open .hero-inner { grid-template-columns: 1fr; }
 }
-.smoke-svg {
+/* ===== Smoke Effekt (production) ===== */
+.smoke {
   position: fixed;
-  left:0; right:0; bottom:-10vh;
-  height: 50vh;
-  pointer-events:none;
-  z-index:3;
-  -webkit-mask: radial-gradient(60% 60% at 50% 100%, #000 35%, transparent 80%);
-          mask: radial-gradient(60% 60% at 50% 100%, #000 35%, transparent 80%);
-  filter: url(#smokeNoise) blur(8px);
-  background:
-    radial-gradient(120px 90px at 45% 95%, rgba(255,255,255,.06), transparent 70%),
-    radial-gradient(160px 110px at 55% 98%, rgba(255,255,255,.05), transparent 75%),
-    radial-gradient(220px 150px at 50% 92%, rgba(255,255,255,.04), transparent 75%);
-  animation: smokeDrift 20s linear infinite;
-  opacity:.9;
+  left: 0; right: 0; bottom: 0;
+  height: 45vh;
+  pointer-events: none;
+  overflow: hidden;
+  filter: blur(10px) contrast(1.06);
+  will-change: transform;
 }
-@keyframes smokeDrift {
-  from { transform: translateY(4%) }
-  to   { transform: translateY(-20%) }
+
+/* 1. & 2. Schicht */
+.smoke::before,
+.smoke::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: 140vw; height: 140vh;
+  transform: translateX(-50%);
+  background:
+    radial-gradient(240px 180px at 50% 95%, rgba(255,255,255,0.12), transparent 70%),
+    radial-gradient(280px 200px at 42% 98%, rgba(255,255,255,0.10), transparent 75%),
+    radial-gradient(220px 160px at 60% 92%, rgba(255,255,255,0.09), transparent 70%);
+  animation: smokeUp 20s linear infinite;
+  opacity: .85;
+}
+.smoke::after {
+  animation-duration: 26s;
+  animation-delay: -8s;
+  opacity: .65;
+}
+
+/* 3. Schicht (Tiefe) */
+.smoke > i {
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: 160vw; height: 160vh;
+  transform: translateX(-50%);
+  background:
+    radial-gradient(260px 200px at 55% 98%, rgba(255,255,255,0.10), transparent 75%),
+    radial-gradient(220px 160px at 45% 96%, rgba(255,255,255,0.08), transparent 75%);
+  animation: smokeUp 32s linear infinite;
+  opacity: .55;
+  display: block;
+}
+
+/* Bewegung */
+@keyframes smokeUp {
+  0%   { transform: translate(-50%, 10%) rotate(0deg)   scale(1); }
+  50%  { transform: translate(-50%, -8%) rotate(2deg)   scale(1.03); }
+  100% { transform: translate(-50%, -28%) rotate(-2deg) scale(1.06); }
 }
