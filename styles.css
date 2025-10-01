@@ -111,13 +111,15 @@ body {
     0 0 40px #ff0033,
     0 0 80px rgba(255,0,51,0.85);
   animation: neonBlink 1.7s infinite alternate; /* <- Blinken */
-}
-.map-point:nth-child(2) .pulse {
-  animation-delay: 0.3s;
-}
-.map-point:nth-child(3) .pulse {
-  animation-delay: 0.6s;
-}
+/* Versetztes Blinken für mehrere Punkte */
+.map-point:nth-of-type(1) .pulse { animation-delay: 0s; }
+.map-point:nth-of-type(2) .pulse { animation-delay: 0.2s; }
+.map-point:nth-of-type(3) .pulse { animation-delay: 0.4s; }
+.map-point:nth-of-type(4) .pulse { animation-delay: 0.6s; }
+.map-point:nth-of-type(5) .pulse { animation-delay: 0.8s; }
+.map-point:nth-of-type(6) .pulse { animation-delay: 1s; }
+.map-point:nth-of-type(7) .pulse { animation-delay: 1.2s; }
+
 @keyframes neonBlink {
   0% {
     opacity: 1;
