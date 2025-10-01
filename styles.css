@@ -321,3 +321,23 @@ body {
   .city-card { width: 92vw; }
   .panel-open .hero-inner { grid-template-columns: 1fr; }
 }
+.smoke-svg {
+  position: fixed;
+  left:0; right:0; bottom:-10vh;
+  height: 50vh;
+  pointer-events:none;
+  z-index:3;
+  -webkit-mask: radial-gradient(60% 60% at 50% 100%, #000 35%, transparent 80%);
+          mask: radial-gradient(60% 60% at 50% 100%, #000 35%, transparent 80%);
+  filter: url(#smokeNoise) blur(8px);
+  background:
+    radial-gradient(120px 90px at 45% 95%, rgba(255,255,255,.06), transparent 70%),
+    radial-gradient(160px 110px at 55% 98%, rgba(255,255,255,.05), transparent 75%),
+    radial-gradient(220px 150px at 50% 92%, rgba(255,255,255,.04), transparent 75%);
+  animation: smokeDrift 20s linear infinite;
+  opacity:.9;
+}
+@keyframes smokeDrift {
+  from { transform: translateY(4%) }
+  to   { transform: translateY(-20%) }
+}
