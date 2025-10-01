@@ -316,11 +316,6 @@ body {
   align-items: center;
 }
 
-/* Mobile: Panel volle Breite */
-@media (max-width: 980px) {
-  .city-card { width: 92vw; }
-  .panel-open .hero-inner { grid-template-columns: 1fr; }
-}
 .smoke-svg {
   position: fixed;
   left:0; right:0; bottom:-10vh;
@@ -340,4 +335,10 @@ body {
 @keyframes smokeDrift {
   from { transform: translateY(4%) }
   to   { transform: translateY(-20%) }
+}
+
+/* Mobile: Panel volle Breite */
+@media (max-width: 980px) {
+  .city-card { width: 92vw; }
+  .panel-open .hero-inner { grid-template-columns: 1fr; }
 }
