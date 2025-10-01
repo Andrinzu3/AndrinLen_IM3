@@ -39,5 +39,21 @@ if ($note >= 4) {
 } else {
     echo "Nicht bestanden";
 }
-?>
+
+// -> arrays
+
+$banane = ['gelbe banane', 'grüne banane', 'braune banane'];
+echo '<pre>';
+print_r($banane);
+echo '</pre>';
+
+// -> assoziative arrays
+
+$standorte = [
+    'chur' => 16.4,
+    'zürich' => 20.3,
+    'st.galle ' => 18.7
+];
+
+
 
