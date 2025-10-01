@@ -324,6 +324,7 @@ body {
   .city-card { width: 92vw; }
   .panel-open .hero-inner { grid-template-columns: 1fr; }
 }
+<<<<<<< HEAD
 /* ===== Smoke Effekt (production) ===== */
 .smoke {
 >>>>>>> 5a3803ce77db07d9a0af6e6548e8b96602cf125c
@@ -390,3 +391,5 @@ body {
   100% { transform: translate(-50%, -28%) rotate(-2deg) scale(1.06); }
 >>>>>>> 5a3803ce77db07d9a0af6e6548e8b96602cf125c
 }
+=======
+>>>>>>> 3b2446d78480c9c1d5969a7af4749b4a50894bdf
