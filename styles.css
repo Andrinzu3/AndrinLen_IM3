@@ -324,20 +324,3 @@ body {
   .city-card { width: 92vw; }
   .panel-open .hero-inner { grid-template-columns: 1fr; }
 }
-
-/* ===== Smoke Effekt (production) ===== */
-.smoke {
-  position: fixed;
-  left: 0; right: 0; bottom: 0;
-  height: 45vh;
-  pointer-events: none;
-  overflow: hidden;
-  filter: blur(10px) contrast(1.06);
-  will-change: transform;
-}
-/* Bewegung */
-@keyframes smokeUp {
-  0%   { transform: translate(-50%, 10%) rotate(0deg)   scale(1); }
-  50%  { transform: translate(-50%, -8%) rotate(2deg)   scale(1.03); }
-  100% { transform: translate(-50%, -28%) rotate(-2deg) scale(1.06); }
-}
