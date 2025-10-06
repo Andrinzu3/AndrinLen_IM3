@@ -31,7 +31,7 @@ function fetchWeatherData()
 
     // Schließt die cURL-Sitzung
     curl_close($ch);
-
+    pribnt_r($response);
 
     // Dekodiert die JSON-Antwort und gibt Daten zurück
     return json_decode($response, true);
@@ -39,4 +39,7 @@ function fetchWeatherData()
 }
 
 // Gibt die Daten zurück, wenn dieses Skript eingebunden ist
+echo "<pre>";
+print_r(fetchWeatherData());
+echo "</pre>";
 return fetchWeatherData();
