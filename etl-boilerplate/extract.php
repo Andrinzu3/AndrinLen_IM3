@@ -16,7 +16,7 @@
 
 function fetchWeatherData()
 {
-    $url = "https://air-quality-api.open-meteo.com/v1/air-quality?latitude=28.6214&longitude=77.2148&hourly=us_aqi,ozone,carbon_monoxide,carbon_dioxide,uv_index&ref=freepublicapis.com"; 
+    $url = "https://air-quality-api.open-meteo.com/v1/air-quality?latitude=28.6214&longitude=77.2148&current=us_aqi,ozone,carbon_monoxide,pm2_5&ref=freepublicapis.com"; 
 
     // Initialisiert eine cURL-Sitzung
     $ch = curl_init($url);
