@@ -14,29 +14,38 @@
   10) Fehlerfälle: Exception/Fehlerobjekt nach oben reichen (kein HTML ausgeben).
    ============================================================================ */
 
+<?php
 function fetchWeatherData()
 {
+    // URLs und Schluessel
     $url = "https://air-quality-api.open-meteo.com/v1/air-quality?latitude=28.6214&longitude=77.2148&current=us_aqi,ozone,carbon_monoxide,pm2_5&ref=freepublicapis.com"; 
+    $TOMTOM_BASE = "https://api.tomtom.com/traffic/services/4/flowSegmentData/relative0/10/json";
+    $TOMTOM_KEY  = "s71P0oNOD3tfvv60YSqP69K64EDjZnvI";
 
-    // Initialisiert eine cURL-Sitzung
+    // cURL
     $ch = curl_init($url);
-
-    // Setzt Optionen
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 8);
 
-
-    // Führt die cURL-Sitzung aus und erhält den Inhalt
     $response = curl_exec($ch);
-
-
-    // Schließt die cURL-Sitzung
+    if ($response === false) {
+        $error = curl_error($ch);
+        curl_close($ch);
+        throw new Exception("cURL-Fehler: " . $error);
+    }
     curl_close($ch);
 
-
-    // Dekodiert die JSON-Antwort und gibt Daten zurück
-    return json_decode($response, true);
-
+    $data = json_decode($response, true);
+    if ($data === null) {
+        throw new Exception("Ungueltige JSON-Antwort von Open-Meteo");
+    }
+    return $data;
 }
 
-// Gibt die Daten zurück, wenn dieses Skript eingebunden ist
-return fetchWeatherData();
+// Nur wenn direkt im Browser / CLI aufgerufen, nicht beim Einbinden:
+if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'] ?? '')) {
+    header('Content-Type: application/json');
+    echo json_encode(fetchWeatherData(), JSON_PRETTY_PRINT);
+}
