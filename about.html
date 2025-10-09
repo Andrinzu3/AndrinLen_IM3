@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>About – Smog Baharat</title>
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="logo">SMOG BAHARAT</div>
+        <div class="tag">Luftqualität und Verkehr in Indien</div>
+      </div>
+
+      <nav class="main-nav" aria-label="Hauptnavigation">
+        <a href="index.html" class="nav-link">Map</a>
+        <a href="contact.html" class="nav-link">Contact</a>
+        <a href="about.html" class="nav-link is-active">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="about">
+    <!-- Fullscreen Hero -->
+    <section class="about-hero-min">
+      <div class="about-bg" aria-hidden="true"></div>
+      <div class="about-vignette" aria-hidden="true"></div>
+  
+      <div class="about-center">
+        <h1 class="about-title"><span class="accent">Smog</span> Bhārat</h1>
+        <p class="about-sub">
+          Ein datenbasiertes Projekt, das zeigt, wie Luftqualität und Verkehr in indischen Städten
+          zusammenhängen – klar, interaktiv und zugänglich visualisiert.
+        </p>
+        <div class="about-actions">
+          <a class="pill" href="index.html">Karte ansehen</a>
+          <a class="pill pill-ghost" href="contact.html">Kontakt</a>
+        </div>
+      </div>
+  
+      <button class="scroll-cue" aria-label="Weiter scrollen">▾</button>
+    </section>
+  
+    <!-- Mission / Bild -->
+    <section class="about-split">
+        <div class="about-copy">
+          <h2>Was ist Smog Bhārat?</h2>
+          <p>Smog Bhārat verbindet Echtzeit-Daten zu Luftqualität (AQI) und Verkehrsdichte auf einer interaktiven Karte. Jede Stadt wird als pulsierender Punkt dargestellt – ein lebendiger Indikator für die aktuelle Situation.</p>
+      
+          <h2>Wie funktioniert es?</h2>
+          <p>Die Anwendung kombiniert offene Datenschnittstellen wie OpenAQ und TomTom Traffic. Dadurch lassen sich Trends, Muster und Gegensätze zwischen Regionen sichtbar machen – übersetzt in ein ruhiges, intuitives Interface.</p>
+      
+          <h2>Warum dieses Projekt?</h2>
+          <p>Luftverschmutzung ist in Indien allgegenwärtig, doch Zahlen allein sagen wenig aus. Wir wollten Daten so gestalten, dass sie verstanden und gefühlt werden – als visuelle Erfahrung, nicht als Excel-Tabelle.</p>
+        </div>
+      
+        <figure class="about-art">
+          <img src="Assets/Bilder/inder_finder.png" alt="Visual zu Smog Bhārat">
+        </figure>
+      </section>
+  </main>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <small>© <span id="year"></span> Smog Baharat</small>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Mini-Parallax für das Hero-Background
+    const bg = document.querySelector('.about-bg');
+    window.addEventListener('scroll', () => {
+      const y = Math.min(window.scrollY * 0.12, 60);
+      if (bg) bg.style.transform = `translate3d(0, ${y}px, 0) scale(1.06)`;
+    }, { passive: true });
+
+    // Scroll-Cue
+    document.querySelector('.scroll-cue')?.addEventListener('click', () => {
+      document.querySelector('.about-split')?.scrollIntoView({ behavior: 'smooth' });
+    });
+  </script>
+</body>
+</html>

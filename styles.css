@@ -157,6 +157,7 @@ body{
   display:grid;place-items:center;color:var(--muted);font-size:14px;
 }
 
+
 /* Hide headline when panel open */
 .panel-open .hero-copy{display:none;opacity:0;transform:translateY(8px);pointer-events:none}
 
