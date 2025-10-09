@@ -1,4 +1,4 @@
-<?php
+
 /* ============================================================================
    HANDLUNGSANWEISUNG (load.php)
    1) Binde 001_config.php (PDO-Config) ein.
