@@ -3,3 +3,4 @@ config.php
 config.tempate.php
 .vscode/*
 .vscode/sftp.json
+/.vscode
