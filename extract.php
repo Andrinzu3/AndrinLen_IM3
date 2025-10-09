@@ -1,48 +1,74 @@
 <?php
-/**
- * Holt Luftqualitaetsdaten. Wenn API nicht erreichbar ist, nutzt Fallback-JSON.
- * Aufruf: extractRawData($lat, $lon) oder ohne Parameter (Delhi-Default).
- */
-function extractRawData(float $lat = 28.599998, float $lon = 77.20001): array
+declare(strict_types=1);
+
+// Städte (beliebig erweitern)
+$cities = [
+    'Neu-Delhi' => [28.6139, 77.2090],
+    'Kochi'     => [9.9341, 76.2606],
+    'Bangalore' => [12.9716, 77.5946],
+    'Shillong'  => [25.5760, 91.8825],
+    'Raipur'    => [21.2381, 81.6337],
+    'Hyderabad' => [17.3871, 78.4917],
+    'Mumbai'    => [19.0728, 72.8826],
+    'Kanpur'    => [26.4499, 80.3319],
+];
+
+function fetchAirQuality(float $lat, float $lon): array
 {
-    // 1) Erst API versuchen
-    $base  = 'https://air-quality-api.open-meteo.com/v1/air-quality';
-    $query = [
+    $url = 'https://air-quality-api.open-meteo.com/v1/air-quality?' . http_build_query([
         'latitude'  => $lat,
         'longitude' => $lon,
-        'current'   => 'us_aqi,ozone,carbon_monoxide,pm2_5',
-        'timezone'  => 'UTC',
-    ];
-    $url = $base . '?' . http_build_query($query);
-
-    $ch = curl_init($url);
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_CONNECTTIMEOUT => 5,
-        CURLOPT_TIMEOUT        => 10,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_MAXREDIRS      => 3,
-        CURLOPT_HTTPHEADER     => ['Accept: application/json'],
-        CURLOPT_USERAGENT      => 'im3-etl/1.0',
+        'current'   => 'us_aqi,carbon_monoxide,ozone,pm2_5',
+        'timezone'  => 'auto',
     ]);
-    $resp = curl_exec($ch);
-    $http = $resp === false ? 0 : (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10]);
+    $res = curl_exec($ch);
+    if ($res === false) { $e = curl_error($ch); curl_close($ch); throw new RuntimeException($e); }
     curl_close($ch);
+    $data = json_decode($res, true);
+    if (json_last_error() !== JSON_ERROR_NONE) { throw new RuntimeException(json_last_error_msg()); }
+    return $data;
+}
 
-    if ($resp !== false && $http >= 200 && $http < 300) {
-        $data = json_decode($resp, true);
-        if (json_last_error() === JSON_ERROR_NONE
-            && isset($data['current'], $data['latitude'], $data['longitude'])) {
-            return $data;
+function fetchTomTomTraffic(float $lat, float $lon, string $key): array
+{
+    $base = 'https://api.tomtom.com/traffic/services/4/flowSegmentData/relative0/10/json';
+    $url  = $base . '?' . http_build_query([
+        'point' => sprintf('%.6f,%.6f', $lat, $lon),
+        'unit'  => 'KMPH',
+        'key'   => $key,
+    ]);
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10]);
+    $res = curl_exec($ch);
+    if ($res === false) { $e = curl_error($ch); curl_close($ch); throw new RuntimeException($e); }
+    curl_close($ch);
+    $data = json_decode($res, true);
+    if (json_last_error() !== JSON_ERROR_NONE) { throw new RuntimeException(json_last_error_msg()); }
+    return $data;
+}
+
+function fetchAllCities(array $cities, string $tomtomKey): array
+{
+    $out = [];
+    foreach ($cities as $name => [$lat, $lon]) {
+        try {
+            $out[$name] = [
+                'latitude'    => $lat,
+                'longitude'   => $lon,
+                'air_quality' => fetchAirQuality($lat, $lon),
+                'traffic'     => fetchTomTomTraffic($lat, $lon, $tomtomKey),
+            ];
+        } catch (Throwable $e) {
+            $out[$name] = ['error' => $e->getMessage()];
         }
     }
-
-    // 2) Fallback-JSON (deine gelieferten Rohdaten)
-    $json = '{"latitude":28.599998,"longitude":77.20001,"generationtime_ms":0.23996829986572266,"utc_offset_seconds":0,"timezone":"GMT","timezone_abbreviation":"GMT","elevation":217.0,"current_units":{"time":"iso8601","interval":"seconds","us_aqi":"USAQI","ozone":"μg/m³","carbon_monoxide":"μg/m³","pm2_5":"μg/m³"},"current":{"time":"2025-10-06T12:00","interval":900,"us_aqi":160,"ozone":134.0,"carbon_monoxide":570.0,"pm2_5":46.6}}';
-    $fallback = json_decode($json, true);
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        throw new RuntimeException('Fallback-JSON ungueltig: ' . json_last_error_msg());
-    }
-    return $fallback;
+    return $out;
 }
+
+// beim Einbinden sofort die Rohdaten liefern
+require_once __DIR__ . '/config.php';
+return fetchAllCities($cities, TOMTOM_KEY);
+
 
