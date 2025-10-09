@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-// Städte (beliebig erweitern)
+// Städte
 $cities = [
     'Neu-Delhi' => [28.6139, 77.2090],
     'Kochi'     => [9.9341, 76.2606],
