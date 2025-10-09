@@ -1,3 +1,5 @@
+## Ignore IDE and config files
+
 .vscode/sftp.json
 config.php
 config.tempate.php
