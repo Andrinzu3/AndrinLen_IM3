@@ -35,34 +35,28 @@ try {
     }
     unset($r);
 
-    // Optional: Upsert statt plain Insert (UNIQUE-Index nötig, z. B. latitude,longitude,DATE(timestamp))
-    $sql = "
-        INSERT INTO im3
-            (`latitude`,`longitude`,`us-aqi`,`co`,`o3`,`pm25`,`akt_geschw`,`fre_geschw`)
-        VALUES
-            (:latitude,:longitude,:us_aqi,:co,:o3,:pm25,:akt_geschw,:fre_geschw)
-        -- ON DUPLICATE KEY UPDATE
-        --   `us-aqi`=VALUES(`us-aqi`), `co`=VALUES(`co`), `o3`=VALUES(`o3`),
-        --   `pm25`=VALUES(`pm25`), `akt_geschw`=VALUES(`akt_geschw`), `fre_geschw`=VALUES(`fre_geschw`)
-    ";
-
-    $pdo->beginTransaction();
+    $sql = "INSERT INTO `im3`
+      (`latitude`,`longitude`,`us-aqi`,`co`,`o3`,`pm25`,`akt_geschw`,`fre_geschw`)
+      VALUES (?,?,?,?,?,?,?,?)";
     $stmt = $pdo->prepare($sql);
 
+    $pdo->beginTransaction();
+
     $count = 0;
-    foreach ($rows as $r) {
+    foreach ($rows as $row) {
         $stmt->execute([
-            ':latitude'    => $r['latitude'],
-            ':longitude'   => $r['longitude'],
-            ':us_aqi'      => $r['us-aqi'],
-            ':co'          => $r['co'],
-            ':o3'          => $r['o3'],
-            ':pm25'        => $r['pm25'],
-            ':akt_geschw'  => $r['akt_geschw'],
-            ':fre_geschw'  => $r['fre_geschw'],
+            $row['latitude'],
+            $row['longitude'],
+            $row['us-aqi'],
+            $row['co'],
+            $row['o3'],
+            $row['pm25'],
+            $row['akt_geschw'],
+            $row['fre_geschw'],
         ]);
         $count++;
     }
+
     $pdo->commit();
 
     echo "Insert erfolgreich: {$count} Datensatz/saetze eingefügt.\n";
