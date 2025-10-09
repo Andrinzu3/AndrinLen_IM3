@@ -421,3 +421,33 @@ body{
   outline:2px solid rgba(107,111,249,0.35);
   outline-offset:2px; border-radius:10px;
 }
+/* 🐶 Hund & Schild – rechtsbündig, Schild links vom Hund */
+.dog-corner {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;   /* alles nach rechts schieben */
+  gap: 10px;
+  margin-top: 60px;
+  margin-right: 40px;          /* Abstand vom rechten Rand */
+}
+
+.sign-img {
+  width: 55px;                 /* kleineres Schild */
+  height: auto;
+  transform: translateY(-6px);
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.35));
+  margin-right: 5px;           /* etwas Abstand zum Hund */
+}
+
+.dog-img {
+  width: 110px;
+  height: auto;
+  cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease;
+  filter: drop-shadow(0 8px 20px rgba(107,111,249,0.25));
+}
+
+.dog-img:hover {
+  transform: scale(1.1) rotate(2deg);
+  filter: drop-shadow(0 12px 25px rgba(107,111,249,0.45));
+}
