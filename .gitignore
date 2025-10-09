@@ -5,3 +5,4 @@ config.tempate.php
 
 .vscode/sftp.json
 /.vscode
+/.code
