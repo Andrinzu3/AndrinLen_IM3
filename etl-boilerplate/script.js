@@ -65,3 +65,21 @@ document.addEventListener("DOMContentLoaded", () => {
     return color; // Erzeugt eine zufällige Farbe
   }
 });
+// --- Monats-Dropdown: Placeholder-Update (Demo) ---
+const monthSelect = document.getElementById('monthSelect');
+const chartPH = document.querySelector('.chart-placeholder');
+
+// aktuellen Monat vorauswählen
+(function preselectMonth(){
+  if (!monthSelect) return;
+  const m = String(new Date().getMonth() + 1).padStart(2, '0');
+  const opt = monthSelect.querySelector(`option[value="${m}"]`);
+  if (opt) opt.selected = true;
+  if (chartPH) chartPH.textContent = `AQI / Verkehr – Monat: ${opt?.textContent || '—'} (Demo)`;
+})();
+
+// bei Änderung Text aktualisieren
+monthSelect?.addEventListener('change', () => {
+  const label = monthSelect.options[monthSelect.selectedIndex]?.textContent || '—';
+  if (chartPH) chartPH.textContent = `AQI / Verkehr – Monat: ${label} (Demo)`;
+});
