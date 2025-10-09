@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Smog Baharat — Luftqualität und Verkehr in Indien</title>
+  <title>Smog Bahārat — Luftqualität und Verkehr in Indien</title>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,7 +15,7 @@
   <header class="site-header">
     <div class="header-inner">
       <div class="brand">
-        <div class="logo">SMOG BAHARAT</div>
+        <div class="logo">SMOG BAHĀRAT</div>
         <div class="tag">Luftqualität und Verkehr in Indien</div>
       </div>
 
@@ -100,7 +100,23 @@
           </section>
       
           <footer class="city-footer">
-            <strong class="city-name-display">—</strong>
+            <label class="select-wrap" for="monthSelect">
+              <span class="select-label">Monat</span>
+              <select id="monthSelect" class="month-select" aria-label="Monat wählen">
+                <option value="01">Januar</option>
+                <option value="02">Februar</option>
+                <option value="03">März</option>
+                <option value="04">April</option>
+                <option value="05">Mai</option>
+                <option value="06">Juni</option>
+                <option value="07">Juli</option>
+                <option value="08">August</option>
+                <option value="09">September</option>
+                <option value="10">Oktober</option>
+                <option value="11">November</option>
+                <option value="12">Dezember</option>
+              </select>
+            </label>
           </footer>
         </div>
       </aside>
@@ -121,7 +137,7 @@
 
   <footer class="site-footer">
     <div class="footer-inner">
-      <small>© <span id="year"></span> Smog Baharat</small>
+      <small>© <span id="year"></span> Smog Bahārat</small>
     </div>
   </footer>
 
