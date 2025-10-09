@@ -26,6 +26,7 @@ function closePanel() {
   panel?.setAttribute('aria-hidden', 'true');
 }
 
+
 // Map-Points click
 document.querySelectorAll('.map-point').forEach(p => {
   p.addEventListener('click', () => {
@@ -39,3 +40,42 @@ closeBtn?.addEventListener('click', closePanel);
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePanel(); });
 // Klick außerhalb der Card schließt
 panel?.addEventListener('click', (e) => { if (e.target === panel) closePanel(); });
+
+// ----- Views referenzieren
+const viewOverview = document.querySelector('.view-overview');
+const viewAir = document.querySelector('.view-air');
+const aqiTile = document.querySelector('.metric-aqi');
+
+// Helper: aktive View setzen
+function setPanelView(which){
+  const isOverview = which === 'overview';
+  viewOverview?.classList.toggle('hidden', !isOverview);
+  viewOverview?.setAttribute('aria-hidden', String(!isOverview));
+
+  const isAir = which === 'air';
+  viewAir?.classList.toggle('hidden', !isAir);
+  viewAir?.setAttribute('aria-hidden', String(!isAir));
+}
+
+// Kachel „Luftqualität“ öffnet Air-View
+aqiTile?.addEventListener('click', () => setPanelView('air'));
+aqiTile?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setPanelView('air'); }
+});
+
+// Zurück-Button
+document.querySelectorAll('[data-back="overview"]').forEach(btn=>{
+  btn.addEventListener('click', ()=> setPanelView('overview'));
+});
+
+// Beim Öffnen eines Panels immer mit Übersicht starten
+const __openPanel = openPanel;
+openPanel = function(cityName){
+  setPanelView('overview');
+  __openPanel(cityName);
+};
+
+// Placeholder: Monatswechsel (zukünftig Graph/Werte laden)
+document.querySelector('.month-select')?.addEventListener('change', (e)=>{
+  console.log('Monat gewählt:', e.target.value);
+});

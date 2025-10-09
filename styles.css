@@ -30,9 +30,21 @@ body{
 /* Header */
 .site-header{padding:18px 0;max-width:var(--max-width);margin:0 auto 24px}
 .header-inner{display:flex;align-items:center;justify-content:space-between;gap:16px}
-.brand{display:flex;flex-direction:column}
-.logo{font-weight:800;font-size:20px;letter-spacing:1px}
-.tag{font-size:12px;color:var(--muted);margin-top:4px}
+.brand {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1; /* enger zusammen */
+}
+.logo {
+  font-weight: 800;
+  font-size: 22px; /* leicht größer, optional */
+  letter-spacing: 1px;
+}
+.tag {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 1px; /* war 4px → jetzt enger */
+}
 
 /* Nav */
 .main-nav{display:flex;gap:28px;align-items:center}
@@ -156,15 +168,16 @@ body{
   height:180px;border-radius:12px;background:linear-gradient(180deg,#151a2a 0%,#0e1422 100%);
   display:grid;place-items:center;color:var(--muted);font-size:14px;
 }
-.city-footer{
+.city-card .city-footer {
   margin-top: 14px;
+  width: 100%;
   display: flex;
-  justify-content: flex-end;
   align-items: center;
+  justify-content: flex-start;   /* 👈 jetzt linksbündig */
+  padding-left: 6px;             /* leichter Abstand vom Rand */
   gap: 10px;
 }
-
-.select-wrap{
+.select-wrap {
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -174,6 +187,7 @@ body{
   border-radius: 12px;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
 }
+
 
 .select-label{
   font-size: 13px;
@@ -369,4 +383,41 @@ body{
   .about-art {
     height: 300px;
   }
+}
+/* View-Umschaltung */
+.view{ display:block; }
+.hidden{ display:none; }
+
+/* Kopf der Detail-Views */
+.view-head{
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:10px;
+}
+.view-head h3{ margin:0; font-size:18px; letter-spacing:.2px; }
+
+/* Back-Link */
+.back-link{
+  background:transparent; color:var(--muted); border:0; cursor:pointer;
+  padding:6px 8px; border-radius:10px;
+}
+.back-link:hover{ background:rgba(255,255,255,0.06); color:#fff; }
+
+/* AQ Grid */
+.aq-grid{
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:12px; margin:10px 0 4px;
+}
+.aq-item{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:12px; padding:12px; text-align:center;
+}
+.aq-label{ display:block; color:var(--muted); font-size:12px; margin-bottom:6px; }
+.aq-value{ font-weight:800; font-size:22px; }
+
+/* Kachel „Luftqualität“ interaktiv markieren */
+.metric-aqi{ cursor:pointer; }
+.metric-aqi:hover{
+  outline:2px solid rgba(107,111,249,0.35);
+  outline-offset:2px; border-radius:10px;
 }

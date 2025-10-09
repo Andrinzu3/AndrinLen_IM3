@@ -80,43 +80,70 @@
       <aside class="city-panel" aria-hidden="true">
         <div class="city-card">
           <button class="panel-close" aria-label="Schließen">×</button>
-      
+
           <header class="city-card-header">
             <h2 class="city-title">Stadt</h2>
-            <p class="city-sub">Luftqualität & Verkehr (live)</p>
+            <p class="city-sub">Luftqualität &amp; Verkehr (live)</p>
           </header>
-      
-          <section class="city-metrics">
-            <div class="metric"><span class="label">Luftqualität</span><span class="value">—</span></div>
-            <div class="metric"><span class="label">Verkehrsdichte</span><span class="value">—</span></div>
-            <div class="chips">
-              <span class="chip chip-aqi">—</span>
-              <span class="chip chip-traffic">—</span>
+          
+          <!-- ===== Übersicht (Startansicht) ===== -->
+          <div class="view view-overview" aria-hidden="false">
+            <section class="city-metrics">
+              <!-- Diese Kachel ist klickbar und öffnet die Luftqualität-Ansicht -->
+              <div class="metric metric-aqi" role="button" tabindex="0" title="Luftqualität ansehen">
+                <span class="label">Luftqualität</span><span class="value">—</span>
+              </div>
+              <div class="metric">
+                <span class="label">Verkehrsdichte</span><span class="value">—</span>
+              </div>
+              <div class="chips">
+                <span class="chip chip-aqi">—</span>
+                <span class="chip chip-traffic">—</span>
+              </div>
+            </section>
+          
+            <section class="city-chart">
+              <div class="chart-placeholder">AQI / Verkehr – Chart Placeholder</div>
+            </section>
+          </div>
+          
+          <!-- ===== Luftqualität (ersetzt die Übersicht) ===== -->
+          <div class="view view-air hidden" aria-hidden="true">
+            <div class="view-head">
+              <button class="back-link" data-back="overview">← Zurück</button>
+              <h3>Luftqualität</h3>
             </div>
-          </section>
-      
-          <section class="city-chart">
-            <div class="chart-placeholder">AQI / Verkehr – Chart Placeholder</div>
-          </section>
-      
+          
+            <section class="aq-grid">
+              <div class="aq-item">
+                <span class="aq-label">PM₂.₅</span>
+                <span class="aq-value">—</span>
+              </div>
+              <div class="aq-item">
+                <span class="aq-label">CO</span>
+                <span class="aq-value">—</span>
+              </div>
+              <div class="aq-item">
+                <span class="aq-label">O₃</span>
+                <span class="aq-value">—</span>
+              </div>
+            </section>
+          
+            <section class="city-chart">
+              <div class="chart-placeholder">Luftqualität – Graph Placeholder</div>
+            </section>
+          </div>
+          
           <footer class="city-footer">
-            <label class="select-wrap" for="monthSelect">
+            <div class="select-wrap">
               <span class="select-label">Monat</span>
-              <select id="monthSelect" class="month-select" aria-label="Monat wählen">
-                <option value="01">Januar</option>
-                <option value="02">Februar</option>
-                <option value="03">März</option>
-                <option value="04">April</option>
-                <option value="05">Mai</option>
-                <option value="06">Juni</option>
-                <option value="07">Juli</option>
-                <option value="08">August</option>
-                <option value="09">September</option>
-                <option value="10">Oktober</option>
-                <option value="11">November</option>
-                <option value="12">Dezember</option>
+              <select class="month-select" id="month">
+                <option>Januar</option><option>Februar</option><option>März</option>
+                <option>April</option><option>Mai</option><option>Juni</option>
+                <option>Juli</option><option>August</option><option>September</option>
+                <option>Oktober</option><option>November</option><option>Dezember</option>
               </select>
-            </label>
+            </div>
           </footer>
         </div>
       </aside>
