@@ -81,25 +81,11 @@ document.querySelector('.panel-close')?.addEventListener('click', closePanel);
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePanel(); });
 panel?.addEventListener('click', (e) => { if (e.target === panel) closePanel(); });
 
-/* ================= Monat-Placeholder (nur Text) ================= */
-function updateMonthPH(){
-  const label = monthSelect?.value || '—';
-  chartPlaceholders.forEach(el => {
-    const inAir = !viewAir?.classList.contains('hidden');
-    el.textContent = inAir
-      ? `Luftqualität – Monat: ${label}`
-      : `AQI / Verkehr – Monat: ${label}`;
-  });
-  // Chart für aktuelle Stadt neu bauen
-  if (CURRENT_CITY) showCity(CURRENT_CITY);
-}
-monthSelect?.addEventListener('change', updateMonthPH);
-updateMonthPH();
-// Direkt NACH der monthSelect-Definition einfügen:
+/* ================= Monat-Auswahl → Chart reload ================= */
 monthSelect?.addEventListener('change', () => {
   const label = monthSelect.value || '—';
 
-  // Placeholder-Text aktualisieren (optional)
+  // Placeholder aktualisieren
   document.querySelectorAll('.view .chart-placeholder').forEach(el => {
     const inAir = !document.querySelector('#view-air')?.classList.contains('hidden');
     el.textContent = inAir
@@ -107,7 +93,7 @@ monthSelect?.addEventListener('change', () => {
       : `AQI / Verkehr – Monat: ${label}`;
   });
 
-  // >>> Chart sofort für die aktuell geöffnete Stadt neu aufbauen
+  // Chart neu rendern, falls eine Stadt offen ist
   if (typeof CURRENT_CITY === 'string' && CURRENT_CITY) {
     showCity(CURRENT_CITY);
   }
