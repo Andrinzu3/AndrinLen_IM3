@@ -4,7 +4,7 @@ declare(strict_types=1);
 // Städte
 $cities = [
     'Neu-Delhi' => [28.6139, 77.2090],
-    'Kochi'     => [9.9341, 76.2606],
+    'Kochi'     => [10.0035, 76.3148],
     'Bangalore' => [12.9716, 77.5946],
     'Shillong'  => [25.5760, 91.8825],
     'Raipur'    => [21.2381, 81.6337],
