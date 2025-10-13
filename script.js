@@ -95,6 +95,23 @@ function updateMonthPH(){
 }
 monthSelect?.addEventListener('change', updateMonthPH);
 updateMonthPH();
+// Direkt NACH der monthSelect-Definition einfügen:
+monthSelect?.addEventListener('change', () => {
+  const label = monthSelect.value || '—';
+
+  // Placeholder-Text aktualisieren (optional)
+  document.querySelectorAll('.view .chart-placeholder').forEach(el => {
+    const inAir = !document.querySelector('#view-air')?.classList.contains('hidden');
+    el.textContent = inAir
+      ? `Luftqualität – Monat: ${label}`
+      : `AQI / Verkehr – Monat: ${label}`;
+  });
+
+  // >>> Chart sofort für die aktuell geöffnete Stadt neu aufbauen
+  if (typeof CURRENT_CITY === 'string' && CURRENT_CITY) {
+    showCity(CURRENT_CITY);
+  }
+});
 
 /* ================= Chart.js – Übersicht ================= */
 function renderOverviewChart(labels, aqiData, trafficData){
