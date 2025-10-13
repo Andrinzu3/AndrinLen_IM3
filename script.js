@@ -1,51 +1,89 @@
-// Jahr im Footer
+// ================= Jahr im Footer =================
 document.getElementById('year').textContent = new Date().getFullYear();
 
-/* ================= Panel / Views ================= */
-const panel = document.querySelector('.city-panel');
-const titleEl = document.querySelector('.city-title');
-const footerName = document.querySelector('.city-name-display');
-const viewOverview = document.querySelector('.view-overview');
-const viewAir = document.querySelector('.view-air');
-const aqiTile = document.querySelector('.metric-aqi');
+/* ================= Basis-Refs ================= */
+const panel       = document.querySelector('.city-panel');
+const titleEl     = document.querySelector('.city-title');
+const viewOverview= document.querySelector('.view-overview');
+const viewAir     = document.querySelector('.view-air');
+const aqiTile     = document.querySelector('.metric-aqi');
+
+// Tabs (falls im HTML eingefügt)
+const tabButtons  = document.querySelectorAll('.panel-tabs .tab-btn');
+
+// Monat-Placeholder
+const monthSelect = document.querySelector('.month-select');
+const chartPlaceholders = document.querySelectorAll('.view .chart-placeholder');
+
+/* ================= View / Tabs ================= */
+function updateTabUI(which){
+  if (!tabButtons.length) return;
+  tabButtons.forEach(btn=>{
+    const active = btn.dataset.view === which;
+    btn.classList.toggle('is-active', active);
+    btn.setAttribute('aria-selected', String(active));
+  });
+}
 
 function setPanelView(which){
   const isOverview = which === 'overview';
-  viewOverview?.classList.toggle('hidden', !isOverview);
-  viewOverview?.setAttribute('aria-hidden', String(!isOverview));
+  if (viewOverview){
+    viewOverview.classList.toggle('hidden', !isOverview);
+    viewOverview.setAttribute('aria-hidden', String(!isOverview));
+  }
+
   const isAir = which === 'air';
-  viewAir?.classList.toggle('hidden', !isAir);
-  viewAir?.setAttribute('aria-hidden', String(!isAir));
+  if (viewAir){
+    viewAir.classList.toggle('hidden', !isAir);
+    viewAir.setAttribute('aria-hidden', String(!isAir));
+  }
+
+  updateTabUI(which);
 }
 
-function openPanel(cityName) {
-  document.body.classList.add('panel-open');
-  panel?.setAttribute('aria-hidden', 'false');
-  if (titleEl) titleEl.textContent = cityName || '—';
-  if (footerName) footerName.textContent = cityName || '—';
-  setPanelView('overview');
-}
-function closePanel() {
-  document.body.classList.remove('panel-open');
-  panel?.setAttribute('aria-hidden', 'true');
-}
-document.querySelector('.panel-close')?.addEventListener('click', closePanel);
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePanel(); });
-panel?.addEventListener('click', (e) => { if (e.target === panel) closePanel(); });
+// Tabs klickbar machen (wenn vorhanden)
+tabButtons.forEach(btn=>{
+  btn.addEventListener('click', ()=> setPanelView(btn.dataset.view));
+});
+
+// Kachel „Luftqualität“ -> Air-View
 aqiTile?.addEventListener('click', () => setPanelView('air'));
 aqiTile?.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setPanelView('air'); }
 });
+
+// Back-Link(s) in Air-View zurück auf Übersicht
 document.querySelectorAll('[data-back="overview"]').forEach(btn=>{
   btn.addEventListener('click', ()=> setPanelView('overview'));
 });
 
-/* ================= Monat-Placeholder ================= */
-const monthSelect = document.querySelector('.month-select');
-const chartPlaceholders = document.querySelectorAll('.view .chart-placeholder');
+/* ================= Panel Open/Close ================= */
+function openPanel(cityName) {
+  document.body.classList.add('panel-open');
+  panel?.setAttribute('aria-hidden', 'false');
+  if (titleEl) titleEl.textContent = cityName || '—';
+  setPanelView('overview'); // immer mit Übersicht starten
+}
+
+function closePanel() {
+  document.body.classList.remove('panel-open');
+  panel?.setAttribute('aria-hidden', 'true');
+}
+
+document.querySelector('.panel-close')?.addEventListener('click', closePanel);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePanel(); });
+panel?.addEventListener('click', (e) => { if (e.target === panel) closePanel(); });
+
+/* ================= Monat-Placeholder (nur Text) ================= */
 function updateMonthPH(){
   const label = monthSelect?.value || '—';
-  chartPlaceholders.forEach(el => el.textContent = `AQI / Verkehr – Monat: ${label}`);
+  chartPlaceholders.forEach(el => {
+    // Falls Air-View sichtbar, leicht anderer Text:
+    const inAir = !viewAir?.classList.contains('hidden');
+    el.textContent = inAir
+      ? `Luftqualität – Monat: ${label}`
+      : `AQI / Verkehr – Monat: ${label}`;
+  });
 }
 monthSelect?.addEventListener('change', updateMonthPH);
 updateMonthPH();
@@ -54,15 +92,17 @@ updateMonthPH();
 document.addEventListener("DOMContentLoaded", async () => {
   const API_URL = "https://im3.smogbharat.ch/unload.php";
 
-  const aqiValue = document.querySelector(".metric-aqi .value");
-  const trafficValue = document.querySelector(".city-metrics .metric:nth-of-type(2) .value");
-  const chipAqi = document.querySelector(".chip-aqi");
-  const chipTraffic = document.querySelector(".chip-traffic");
+  // Overview-Felder
+  const aqiValue      = document.querySelector(".metric-aqi .value");
+  const trafficValue  = document.querySelector(".city-metrics .metric:nth-of-type(2) .value");
+  const chipAqi       = document.querySelector(".chip-aqi");
+  const chipTraffic   = document.querySelector(".chip-traffic");
 
-  // --- Air-View Felder ---
+  // Air-View Felder
   const aqPM25 = document.querySelector('.aq-grid .aq-item:nth-of-type(1) .aq-value');
   const aqCO   = document.querySelector('.aq-grid .aq-item:nth-of-type(2) .aq-value');
   const aqO3   = document.querySelector('.aq-grid .aq-item:nth-of-type(3) .aq-value');
+
   const fmt = v => (v == null || Number.isNaN(Number(v))) ? '—' : String(Math.round(Number(v)));
 
   const CITIES = [
@@ -124,15 +164,30 @@ document.addEventListener("DOMContentLoaded", async () => {
   let RAW = [];
 
   async function fetchData(){
-    const res = await fetch(API_URL, { cache: "no-store" });
-    if (!res.ok) return;
-    const arr = await res.json();
-    if (!Array.isArray(arr)) return;
-    RAW = arr.map(normalize);
+    try{
+      const res = await fetch(API_URL, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const arr = await res.json();
+      if (!Array.isArray(arr)) throw new Error("API returned non-array");
+      RAW = arr.map(normalize);
+    }catch(err){
+      console.error("API Fehler:", err);
+      RAW = [];
+    }
   }
 
   function showCity(name) {
-    if (!RAW.length) return;
+    if (!RAW.length) {
+      // leeren Zustand rendern
+      aqiValue && (aqiValue.textContent = "—");
+      trafficValue && (trafficValue.textContent = "—");
+      chipAqi && (chipAqi.textContent = "—");
+      chipTraffic && (chipTraffic.textContent = "—");
+      aqPM25 && (aqPM25.textContent = '—');
+      aqCO && (aqCO.textContent = '—');
+      aqO3 && (aqO3.textContent = '—');
+      return;
+    }
 
     const rowsForCity = RAW.filter(r => {
       if (!isFinite(r.latitude) || !isFinite(r.longitude)) return false;
@@ -169,18 +224,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Placeholder unten
     const ts = latest.timestamp || latest.created_at || latest.time || "";
     chartPlaceholders.forEach(el=>{
-      el.textContent = `Letztes Update: ${ts} • PM2.5 ${latest.pm25 ?? "—"} • O3 ${latest.o3 ?? "—"} • CO ${latest.co ?? "—"}`;
+      const inAir = !viewAir?.classList.contains('hidden');
+      el.textContent = inAir
+        ? `Letztes Update: ${ts} • PM2.5 ${latest.pm25 ?? "—"} • O3 ${latest.o3 ?? "—"} • CO ${latest.co ?? "—"}`
+        : `Letztes Update: ${ts} • AQI ${latest.us_aqi ?? "—"} • Verkehr ${traf.pct ?? "—"}%`;
     });
   }
 
+  // Map-Points aktivieren
   document.querySelectorAll('.map-point').forEach(el => {
     el.style.cursor = "pointer";
-    el.addEventListener("click", () => {
+    el.addEventListener("click", async () => {
       const name = el.getAttribute("data-city") || el.getAttribute("title") || "Stadt";
       openPanel(name);
+      if (!RAW.length) await fetchData();
       showCity(name);
     });
   });
 
+  // Initiale Daten (optional schon mal laden)
   await fetchData();
 });
