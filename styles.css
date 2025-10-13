@@ -164,10 +164,6 @@ body{
 .chip-traffic{background:#6b6ff9}
 
 .city-chart{margin-top:10px}
-.chart-placeholder{
-  height:180px;border-radius:12px;background:linear-gradient(180deg,#151a2a 0%,#0e1422 100%);
-  display:grid;place-items:center;color:var(--muted);font-size:14px;
-}
 .city-card .city-footer {
   margin-top: 14px;
   width: 100%;
@@ -480,4 +476,8 @@ body{
   border-color:rgba(107,111,249,0.45);
   color:#fff;
   box-shadow:0 6px 22px rgba(107,111,249,0.25), inset 0 0 0 1px rgba(255,255,255,0.03);
+}
+#chart-overview{
+  width: 100%;
+  display: block;
 }

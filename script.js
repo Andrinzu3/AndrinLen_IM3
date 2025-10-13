@@ -2,22 +2,22 @@
 document.getElementById('year').textContent = new Date().getFullYear();
 
 /* ================= Basis-Refs ================= */
-const panel       = document.querySelector('.city-panel');
-const titleEl     = document.querySelector('.city-title');
-const viewOverview= document.querySelector('.view-overview');
-const viewAir     = document.querySelector('.view-air');
-const aqiTile     = document.querySelector('.metric-aqi');
+const panel        = document.querySelector('.city-panel');
+const titleEl      = document.querySelector('.city-title');
+const viewOverview = document.querySelector('#view-overview');
+const viewAir      = document.querySelector('#view-air');
+const aqiTile      = document.querySelector('.metric-aqi');
 
-// Tabs (falls im HTML eingefügt)
-const tabButtons  = document.querySelectorAll('.panel-tabs .tab-btn');
+const tabButtons   = document.querySelectorAll('.panel-tabs .tab-btn');
 
-// Monat-Placeholder
-const monthSelect = document.querySelector('.month-select');
+const monthSelect  = document.querySelector('.month-select');
 const chartPlaceholders = document.querySelectorAll('.view .chart-placeholder');
+
+// Chart.js Instanz für die Übersicht
+let chartOverview = null;
 
 /* ================= View / Tabs ================= */
 function updateTabUI(which){
-  if (!tabButtons.length) return;
   tabButtons.forEach(btn=>{
     const active = btn.dataset.view === which;
     btn.classList.toggle('is-active', active);
@@ -31,17 +31,17 @@ function setPanelView(which){
     viewOverview.classList.toggle('hidden', !isOverview);
     viewOverview.setAttribute('aria-hidden', String(!isOverview));
   }
-
   const isAir = which === 'air';
   if (viewAir){
     viewAir.classList.toggle('hidden', !isAir);
     viewAir.setAttribute('aria-hidden', String(!isAir));
   }
-
   updateTabUI(which);
+  if (which === 'overview' && chartOverview) {
+    setTimeout(()=> chartOverview.resize(), 0);
+  }
 }
 
-// Tabs klickbar machen (wenn vorhanden)
 tabButtons.forEach(btn=>{
   btn.addEventListener('click', ()=> setPanelView(btn.dataset.view));
 });
@@ -78,7 +78,6 @@ panel?.addEventListener('click', (e) => { if (e.target === panel) closePanel(); 
 function updateMonthPH(){
   const label = monthSelect?.value || '—';
   chartPlaceholders.forEach(el => {
-    // Falls Air-View sichtbar, leicht anderer Text:
     const inAir = !viewAir?.classList.contains('hidden');
     el.textContent = inAir
       ? `Luftqualität – Monat: ${label}`
@@ -87,6 +86,85 @@ function updateMonthPH(){
 }
 monthSelect?.addEventListener('change', updateMonthPH);
 updateMonthPH();
+
+/* ================= Chart.js – Übersicht ================= */
+function renderOverviewChart(labels, aqiData, trafficData){
+  const canvas = document.getElementById('chart-overview');
+  if (!canvas) return;
+
+  // alten Chart entsorgen
+  if (chartOverview) {
+    chartOverview.destroy();
+    chartOverview = null;
+  }
+
+  const ctx = canvas.getContext('2d');
+  const gAQI = ctx.createLinearGradient(0, 0, 0, 180);
+  gAQI.addColorStop(0, 'rgba(98,168,255,0.35)');
+  gAQI.addColorStop(1, 'rgba(98,168,255,0.00)');
+
+  const gTRA = ctx.createLinearGradient(0, 0, 0, 180);
+  gTRA.addColorStop(0, 'rgba(210,107,255,0.35)');
+  gTRA.addColorStop(1, 'rgba(210,107,255,0.00)');
+
+  chartOverview = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'AQI',
+          data: aqiData,
+          borderColor: '#62a8ff',
+          backgroundColor: gAQI,
+          borderWidth: 2,
+          tension: 0.35,
+          pointRadius: 0,
+          fill: true,
+        },
+        {
+          label: 'Verkehrsdichte (%)',
+          data: trafficData,
+          borderColor: '#d26bff',
+          backgroundColor: gTRA,
+          borderWidth: 2,
+          tension: 0.35,
+          pointRadius: 0,
+          fill: true,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          display: true,
+          labels: { color: 'rgba(255,255,255,.75)', boxWidth: 16, boxHeight: 2 }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(12,18,32,.95)',
+          borderColor: 'rgba(111,189,255,.35)',
+          borderWidth: 1,
+          titleColor: '#fff',
+          bodyColor: 'rgba(255,255,255,.9)',
+        },
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,.06)' },
+          ticks: { color: 'rgba(255,255,255,.55)', maxRotation: 0, autoSkip: true },
+        },
+        y: {
+          beginAtZero: true,
+          grid: { color: 'rgba(255,255,255,.06)' },
+          ticks: { color: 'rgba(255,255,255,.55)' },
+        },
+      },
+    }
+  });
+}
 
 /* ================= API + Rendering ================= */
 document.addEventListener("DOMContentLoaded", async () => {
@@ -107,7 +185,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const CITIES = [
     { key: "Neu-Delhi",  lat: 28.6139, lon: 77.2090 },
-    { key: "Kochi",      lat: 10.0158, lon: 76.2990 },  
+    { key: "Kochi",      lat: 10.0158, lon: 76.2990 },
     { key: "Bangalore",  lat: 12.9716, lon: 77.5946 },
     { key: "Shillong",   lat: 25.5788, lon: 91.8933 },
     { key: "Raipur",     lat: 21.2514, lon: 81.6296 },
@@ -125,6 +203,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                Math.sin(dLon/2)**2;
     return 2 * R * Math.asin(Math.sqrt(s1));
   }
+
   function nearestCityName(lat, lon){
     let best = null, bestKm = Infinity;
     for (const c of CITIES){
@@ -133,6 +212,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     return (bestKm <= 150) ? best : null;
   }
+
   function normalize(row) {
     const r = { ...row };
     if (r["us-aqi"] !== undefined && r.us_aqi === undefined) r.us_aqi = +r["us-aqi"];
@@ -142,6 +222,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     r._ts = new Date(r.timestamp || r.created_at || r.time || 0).getTime();
     return r;
   }
+
   function aqiLabel(v) {
     if (v == null || Number.isNaN(v)) return "—";
     if (v <= 50) return "Gut";
@@ -149,12 +230,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (v <= 150) return "Ungesund (Gr.)";
     if (v <= 200) return "Ungesund";
     if (v <= 300) return "Sehr ungesund";
-    return "Gefaehrlich";
+    return "Gefährlich";
   }
+
   function trafficSummary(akt, frei){
     const a = Number(akt), f = Number(frei);
     if (!isFinite(a) || !isFinite(f) || f <= 0) return {pct:null, label:"—"};
-    const density = Math.max(0, Math.min(1, 1 - a/f));
+    const density = Math.max(0, Math.min(1, 1 - a/f)); // 0..1
     let label = "Niedrig";
     if (density >= 0.66) label = "Hoch";
     else if (density >= 0.33) label = "Mittel";
@@ -177,8 +259,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function showCity(name) {
+    // Leeren Zustand
     if (!RAW.length) {
-      // leeren Zustand rendern
       aqiValue && (aqiValue.textContent = "—");
       trafficValue && (trafficValue.textContent = "—");
       chipAqi && (chipAqi.textContent = "—");
@@ -186,13 +268,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       aqPM25 && (aqPM25.textContent = '—');
       aqCO && (aqCO.textContent = '—');
       aqO3 && (aqO3.textContent = '—');
+      renderOverviewChart([], [], []);
       return;
     }
 
-    const rowsForCity = RAW.filter(r => {
-      if (!isFinite(r.latitude) || !isFinite(r.longitude)) return false;
-      return nearestCityName(r.latitude, r.longitude) === name;
-    }).sort((a,b)=> b._ts - a._ts);
+    const rowsForCity = RAW
+      .filter(r => isFinite(r.latitude) && isFinite(r.longitude))
+      .filter(r => nearestCityName(r.latitude, r.longitude) === name)
+      .sort((a,b)=> b._ts - a._ts);
 
     const latest = rowsForCity[0];
 
@@ -204,13 +287,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       aqPM25 && (aqPM25.textContent = '—');
       aqCO && (aqCO.textContent = '—');
       aqO3 && (aqO3.textContent = '—');
+      renderOverviewChart([], [], []);
       return;
     }
 
     const aq = latest.us_aqi ?? null;
     const traf = trafficSummary(latest.akt_geschw, latest.fre_geschw);
 
-    // Overview
+    // Overview-Werte
     aqiValue && (aqiValue.textContent = (aq ?? "—"));
     trafficValue && (trafficValue.textContent = (traf.pct==null ? "—" : `${traf.pct}%`));
     chipAqi && (chipAqi.textContent = aqiLabel(aq));
@@ -221,7 +305,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     aqCO   && (aqCO.textContent   = fmt(latest.co));
     aqO3   && (aqO3.textContent   = fmt(latest.o3));
 
-    // Placeholder unten
+    // Placeholder-Text unten (falls noch vorhanden)
     const ts = latest.timestamp || latest.created_at || latest.time || "";
     chartPlaceholders.forEach(el=>{
       const inAir = !viewAir?.classList.contains('hidden');
@@ -229,6 +313,22 @@ document.addEventListener("DOMContentLoaded", async () => {
         ? `Letztes Update: ${ts} • PM2.5 ${latest.pm25 ?? "—"} • O3 ${latest.o3 ?? "—"} • CO ${latest.co ?? "—"}`
         : `Letztes Update: ${ts} • AQI ${latest.us_aqi ?? "—"} • Verkehr ${traf.pct ?? "—"}%`;
     });
+
+    // ---- Chart-Daten für die Übersicht ----
+    const rowsAsc = rowsForCity.slice().sort((a,b)=> a._ts - b._ts);
+    const slice = rowsAsc.slice(-24); // letzte ~24 Punkte
+
+    const labels = slice.map(r => {
+      const d = new Date(r._ts);
+      return d.toLocaleString('de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+    });
+    const aqiSeries = slice.map(r => (r.us_aqi ?? null));
+    const trafficSeries = slice.map(r => {
+      const ok = (isFinite(r.akt_geschw) && isFinite(r.fre_geschw) && r.fre_geschw > 0);
+      return ok ? Math.round(Math.max(0, Math.min(1, 1 - r.akt_geschw / r.fre_geschw)) * 100) : null;
+    });
+
+    renderOverviewChart(labels, aqiSeries, trafficSeries);
   }
 
   // Map-Points aktivieren
@@ -242,6 +342,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
-  // Initiale Daten (optional schon mal laden)
+  // Initiale Daten laden (optional)
   await fetchData();
 });
