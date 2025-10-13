@@ -9,19 +9,12 @@ const viewAir      = document.querySelector('#view-air');
 const aqiTile      = document.querySelector('.metric-aqi');
 
 const tabButtons   = document.querySelectorAll('.panel-tabs .tab-btn');
-
 const monthSelect  = document.querySelector('.month-select');
 const chartPlaceholders = document.querySelectorAll('.view .chart-placeholder');
 
-// Chart.js Instanz & aktueller Stadtname
+// Chart.js Instanz + aktuelle Stadt merken
 let chartOverview = null;
-let CURRENT_CITY = null;
-
-// Monate (Dropdown-Labels)
-const MONTHS_DE = [
-  'Januar','Februar','März','April','Mai','Juni',
-  'Juli','August','September','Oktober','November','Dezember'
-];
+let CURRENT_CITY  = null;
 
 /* ================= View / Tabs ================= */
 function updateTabUI(which){
@@ -44,6 +37,8 @@ function setPanelView(which){
     viewAir.setAttribute('aria-hidden', String(!isAir));
   }
   updateTabUI(which);
+
+  // Chart korrekt neu layouten, wenn Übersicht sichtbar wird
   if (which === 'overview' && chartOverview) {
     setTimeout(()=> chartOverview.resize(), 0);
   }
@@ -81,30 +76,40 @@ document.querySelector('.panel-close')?.addEventListener('click', closePanel);
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePanel(); });
 panel?.addEventListener('click', (e) => { if (e.target === panel) closePanel(); });
 
-/* ================= Monat-Auswahl → Chart reload ================= */
+/* ================= Monat-Auswahl → Chart neu zeichnen ================= */
 monthSelect?.addEventListener('change', () => {
+  // Optionaler Placeholder-Text (falls noch genutzt)
   const label = monthSelect.value || '—';
-
-  // Placeholder aktualisieren
-  document.querySelectorAll('.view .chart-placeholder').forEach(el => {
-    const inAir = !document.querySelector('#view-air')?.classList.contains('hidden');
+  chartPlaceholders.forEach(el => {
+    const inAir = !viewAir?.classList.contains('hidden');
     el.textContent = inAir
       ? `Luftqualität – Monat: ${label}`
       : `AQI / Verkehr – Monat: ${label}`;
   });
 
-  // Chart neu rendern, falls eine Stadt offen ist
-  if (typeof CURRENT_CITY === 'string' && CURRENT_CITY) {
-    showCity(CURRENT_CITY);
-  }
+  // Chart für die aktuell geöffnete Stadt neu rendern
+  if (CURRENT_CITY) showCity(CURRENT_CITY);
 });
 
-/* ================= Chart.js – Übersicht ================= */
+/* ================= Hilfen ================= */
+function getSelectedMonthRange(){
+  const monthIdx = monthSelect ? monthSelect.selectedIndex : new Date().getMonth();
+  const year = new Date().getFullYear();
+  const start = new Date(year, monthIdx, 1).getTime();      // inkl.
+  const end   = new Date(year, monthIdx + 1, 1).getTime();  // exkl.
+  return { start, end };
+}
+
+/* ================= Chart.js – Übersicht (Dual Y) ================= */
 function renderOverviewChart(labels, aqiData, trafficData){
   const canvas = document.getElementById('chart-overview');
   if (!canvas) return;
 
-  if (chartOverview) { chartOverview.destroy(); chartOverview = null; }
+  // alten Chart entsorgen
+  if (chartOverview) {
+    chartOverview.destroy();
+    chartOverview = null;
+  }
 
   const ctx = canvas.getContext('2d');
   const gAQI = ctx.createLinearGradient(0, 0, 0, 180);
@@ -122,6 +127,7 @@ function renderOverviewChart(labels, aqiData, trafficData){
       datasets: [
         {
           label: 'AQI',
+          yAxisID: 'y',             // linke Achse
           data: aqiData,
           borderColor: '#62a8ff',
           backgroundColor: gAQI,
@@ -129,10 +135,10 @@ function renderOverviewChart(labels, aqiData, trafficData){
           tension: 0.35,
           pointRadius: 0,
           fill: true,
-          yAxisID: 'y',   // linke Achse
         },
         {
           label: 'Verkehrsdichte (%)',
+          yAxisID: 'y1',            // rechte Achse
           data: trafficData,
           borderColor: '#d26bff',
           backgroundColor: gTRA,
@@ -140,7 +146,6 @@ function renderOverviewChart(labels, aqiData, trafficData){
           tension: 0.35,
           pointRadius: 0,
           fill: true,
-          yAxisID: 'y1',  // rechte Achse
         },
       ],
     },
@@ -166,20 +171,19 @@ function renderOverviewChart(labels, aqiData, trafficData){
           grid: { color: 'rgba(255,255,255,.06)' },
           ticks: { color: 'rgba(255,255,255,.55)', maxRotation: 0, autoSkip: true },
         },
-        y: { // AQI links
+        y: {
           beginAtZero: true,
-          position: 'left',
           grid: { color: 'rgba(255,255,255,.06)' },
           ticks: { color: 'rgba(255,255,255,.55)' },
-          title: { display: true, text: 'AQI', color: 'rgba(255,255,255,.65)' }
+          title: { display: true, text: 'AQI', color: 'rgba(255,255,255,.7)' }
         },
-        y1: { // Verkehr rechts
+        y1: {
           beginAtZero: true,
           position: 'right',
-          grid: { drawOnChartArea: false },
-          ticks: { color: 'rgba(255,255,255,.55)', callback: v => `${v}%` },
-          title: { display: true, text: 'Verkehrsdichte (%)', color: 'rgba(255,255,255,.65)' }
-        },
+          grid: { drawOnChartArea: false }, // kein Gitter doppelt
+          ticks: { color: 'rgba(255,255,255,.55)' },
+          title: { display: true, text: 'Verkehr (%)', color: 'rgba(255,255,255,.7)' }
+        }
       },
     }
   });
@@ -222,6 +226,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                Math.sin(dLon/2)**2;
     return 2 * R * Math.asin(Math.sqrt(s1));
   }
+
   function nearestCityName(lat, lon){
     let best = null, bestKm = Infinity;
     for (const c of CITIES){
@@ -230,6 +235,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     return (bestKm <= 150) ? best : null;
   }
+
   function normalize(row) {
     const r = { ...row };
     if (r["us-aqi"] !== undefined && r.us_aqi === undefined) r.us_aqi = +r["us-aqi"];
@@ -239,6 +245,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     r._ts = new Date(r.timestamp || r.created_at || r.time || 0).getTime();
     return r;
   }
+
   function aqiLabel(v) {
     if (v == null || Number.isNaN(v)) return "—";
     if (v <= 50) return "Gut";
@@ -248,10 +255,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (v <= 300) return "Sehr ungesund";
     return "Gefährlich";
   }
+
   function trafficSummary(akt, frei){
     const a = Number(akt), f = Number(frei);
     if (!isFinite(a) || !isFinite(f) || f <= 0) return {pct:null, label:"—"};
-    const density = Math.max(0, Math.min(1, 1 - a/f));
+    const density = Math.max(0, Math.min(1, 1 - a/f)); // 0..1
     let label = "Niedrig";
     if (density >= 0.66) label = "Hoch";
     else if (density >= 0.33) label = "Mittel";
@@ -273,56 +281,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // Hilfen für Monatsserien
-  const pad2 = n => String(n).padStart(2,'0');
-  const daysInMonth = (y, m0) => new Date(y, m0+1, 0).getDate();
-
-  function buildMonthlySeries(rowsForCity, year, monthIdx0){
-    // filtere auf Monat/Jahr
-    const filtered = rowsForCity.filter(r=>{
-      const d = new Date(r._ts);
-      return d.getFullYear() === year && d.getMonth() === monthIdx0;
-    });
-
-    const byDay = new Map();
-    for (const r of filtered){
-      const d = new Date(r._ts);
-      const day = d.getDate(); // 1..31
-      const trafPct = (isFinite(r.akt_geschw) && isFinite(r.fre_geschw) && r.fre_geschw>0)
-        ? (1 - r.akt_geschw / r.fre_geschw) * 100
-        : null;
-
-      if (!byDay.has(day)) byDay.set(day, {aqi:[], traf:[]});
-      if (r.us_aqi != null && !Number.isNaN(r.us_aqi)) byDay.get(day).aqi.push(+r.us_aqi);
-      if (trafPct != null && isFinite(trafPct)) byDay.get(day).traf.push(trafPct);
-    }
-
-    const numDays = daysInMonth(year, monthIdx0);
-    const labels = [];
-    const aqiSeries = [];
-    const trafSeries = [];
-
-    for (let day = 1; day <= numDays; day++){
-      labels.push(`${pad2(day)}.${pad2(monthIdx0+1)}.`); // nur Datum
-      const bucket = byDay.get(day);
-      if (!bucket){
-        aqiSeries.push(null);
-        trafSeries.push(null);
-      }else{
-        const avg = arr => arr.length ? Math.round(arr.reduce((s,v)=>s+v,0)/arr.length) : null;
-        aqiSeries.push(avg(bucket.aqi));
-        trafSeries.push(bucket.traf.length ? Math.round(avg(bucket.traf)) : null);
-      }
-    }
-    return {labels, aqiSeries, trafSeries};
-  }
-
+  // ---- Haupt-Renderer für Stadt inkl. Monatsfilter + Chart ----
   function showCity(name) {
-    CURRENT_CITY = name;
-
     // Leeren Zustand
     if (!RAW.length) {
-      updateNumbersEmpty();
+      aqiValue && (aqiValue.textContent = "—");
+      trafficValue && (trafficValue.textContent = "—");
+      chipAqi && (chipAqi.textContent = "—");
+      chipTraffic && (chipTraffic.textContent = "—");
+      aqPM25 && (aqPM25.textContent = '—');
+      aqCO && (aqCO.textContent = '—');
+      aqO3 && (aqO3.textContent = '—');
       renderOverviewChart([], [], []);
       return;
     }
@@ -333,25 +302,34 @@ document.addEventListener("DOMContentLoaded", async () => {
       .sort((a,b)=> b._ts - a._ts);
 
     const latest = rowsForCity[0];
+
     if (!latest) {
-      updateNumbersEmpty();
+      aqiValue && (aqiValue.textContent = "—");
+      trafficValue && (trafficValue.textContent = "—");
+      chipAqi && (chipAqi.textContent = "—");
+      chipTraffic && (chipTraffic.textContent = "—");
+      aqPM25 && (aqPM25.textContent = '—');
+      aqCO && (aqCO.textContent = '—');
+      aqO3 && (aqO3.textContent = '—');
       renderOverviewChart([], [], []);
       return;
     }
 
-    // === live Werte oben ===
     const aq = latest.us_aqi ?? null;
     const traf = trafficSummary(latest.akt_geschw, latest.fre_geschw);
 
+    // Overview-Werte
     aqiValue && (aqiValue.textContent = (aq ?? "—"));
     trafficValue && (trafficValue.textContent = (traf.pct==null ? "—" : `${traf.pct}%`));
     chipAqi && (chipAqi.textContent = aqiLabel(aq));
     chipTraffic && (chipTraffic.textContent = traf.label);
 
+    // Air-View Werte
     aqPM25 && (aqPM25.textContent = fmt(latest.pm25));
     aqCO   && (aqCO.textContent   = fmt(latest.co));
     aqO3   && (aqO3.textContent   = fmt(latest.o3));
 
+    // Optionaler Footer-Text
     const ts = latest.timestamp || latest.created_at || latest.time || "";
     chartPlaceholders.forEach(el=>{
       const inAir = !viewAir?.classList.contains('hidden');
@@ -360,26 +338,32 @@ document.addEventListener("DOMContentLoaded", async () => {
         : `Letztes Update: ${ts} • AQI ${latest.us_aqi ?? "—"} • Verkehr ${traf.pct ?? "—"}%`;
     });
 
-    // === Monatsauswahl bestimmen ===
-    let monthIdx = MONTHS_DE.indexOf(monthSelect?.value || '');
-    if (monthIdx < 0) monthIdx = new Date(latest._ts).getMonth();
-    const year = new Date(latest._ts).getFullYear();
+    // ---- Chart-Daten für die Übersicht: NUR gewählter Monat ----
+    const { start, end } = getSelectedMonthRange();
 
-    // === Chart für ganzen Monat (Datum-only Labels) ===
-    const {labels, aqiSeries, trafSeries} = buildMonthlySeries(rowsForCity, year, monthIdx);
-    renderOverviewChart(labels, aqiSeries, trafSeries);
-  }
+    const rowsAsc = rowsForCity
+      .slice()
+      .sort((a,b)=> a._ts - b._ts)
+      .filter(r => r._ts >= start && r._ts < end);
 
-  function updateNumbersEmpty(){
-    const targets = [".metric-aqi .value",
-                     ".city-metrics .metric:nth-of-type(2) .value",
-                     ".chip-aqi",".chip-traffic"];
-    targets.forEach(sel => {
-      const el = document.querySelector(sel); if (el) el.textContent = "—";
+    if (rowsAsc.length === 0){
+      renderOverviewChart([], [], []);
+      return;
+    }
+
+    // x-Achse: NUR Datum (ohne Uhrzeit)
+    const labels = rowsAsc.map(r => {
+      const d = new Date(r._ts);
+      return d.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' });
     });
-    aqPM25 && (aqPM25.textContent = '—');
-    aqCO && (aqCO.textContent = '—');
-    aqO3 && (aqO3.textContent = '—');
+
+    const aqiSeries = rowsAsc.map(r => (r.us_aqi ?? null));
+    const trafficSeries = rowsAsc.map(r => {
+      const ok = (isFinite(r.akt_geschw) && isFinite(r.fre_geschw) && r.fre_geschw > 0);
+      return ok ? Math.round(Math.max(0, Math.min(1, 1 - r.akt_geschw / r.fre_geschw)) * 100) : null;
+    });
+
+    renderOverviewChart(labels, aqiSeries, trafficSeries);
   }
 
   // Map-Points aktivieren
@@ -387,6 +371,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     el.style.cursor = "pointer";
     el.addEventListener("click", async () => {
       const name = el.getAttribute("data-city") || el.getAttribute("title") || "Stadt";
+      CURRENT_CITY = name;        // 👈 wichtig für Monat-Reload
       openPanel(name);
       if (!RAW.length) await fetchData();
       showCity(name);
