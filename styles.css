@@ -436,7 +436,7 @@ body{
   height: auto;
   transform: translateY(-6px);
   filter: drop-shadow(0 4px 10px rgba(0,0,0,0.35));
-  margin-right: 5px;           /* etwas Abstand zum Hund */
+  margin-right: 3px;           /* etwas Abstand zum Hund */
 }
 
 .dog-img {
@@ -451,3 +451,4 @@ body{
   transform: scale(1.1) rotate(2deg);
   filter: drop-shadow(0 12px 25px rgba(107,111,249,0.45));
 }
+
