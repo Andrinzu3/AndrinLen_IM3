@@ -107,7 +107,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const CITIES = [
     { key: "Neu-Delhi",  lat: 28.6139, lon: 77.2090 },
-    { key: "Kochi",      lat: 10.0035, lon: 76.3148 },
+    { key: "Kochi",      lat: 10.0158, lon: 76.2990 },  
     { key: "Bangalore",  lat: 12.9716, lon: 77.5946 },
     { key: "Shillong",   lat: 25.5788, lon: 91.8933 },
     { key: "Raipur",     lat: 21.2514, lon: 81.6296 },
