@@ -270,12 +270,12 @@ function drawAir(labels, pm25, o3, co){
       responsive:true, maintainAspectRatio:false,
       interaction:{ mode:'index', intersect:false },
       plugins:{
-        legend:{ position:'bottom', labels:{ color:'rgba(255,255,255,.8)' } },
+        legend:{ display:true, labels:{ color:'rgba(255,255,255,.75)', boxWidth:16, boxHeight:2 } },
         tooltip:{ backgroundColor:'rgba(12,18,32,.95)', borderColor:'rgba(111,189,255,.35)', borderWidth:1, titleColor:'#fff', bodyColor:'rgba(255,255,255,.9)' }
       },
       scales:{
         yPM:{ position:'left', beginAtZero:true, grid:{ color:'rgba(255,255,255,.06)' }, ticks:{ color:'#6bbf59' }, title:{ display:true, text:'PM₂.₅ (µg/m³)', color:'#6bbf59' }},
-        yO3:{ position:'left', offset:true, beginAtZero:true, grid:{ drawOnChartArea:false }, ticks:{ color:'#ffa046' }, title:{ display:true, text:'O₃ (µg/m³)', color:'#ffa046' }},
+        yO3:{ position:'left',  beginAtZero:true, grid:{ drawOnChartArea:false }, ticks:{ color:'#ffa046' }, title:{ display:true, text:'O₃ (µg/m³)', color:'#ffa046' }},
         yCO:{ position:'right', beginAtZero:true, grid:{ drawOnChartArea:false }, ticks:{ color:'#5fb0ff' }, title:{ display:true, text:'CO (µg/m³)', color:'#5fb0ff' }},
         x:{ min:0, max:labels.length-1, grid:{ color:'rgba(255,255,255,.06)' }, ticks:{ color:'rgba(255,255,255,.55)', maxRotation:0, autoSkip:true } }
       }
