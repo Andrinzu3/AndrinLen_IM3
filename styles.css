@@ -255,25 +255,3 @@ body{
 .sign-img{width:55px;height:auto;transform:translateY(-6px);filter:drop-shadow(0 4px 10px rgba(0,0,0,0.35));margin-right:3px}
 .dog-img{width:110px;height:auto;cursor:pointer;transition:transform .3s ease, filter .3s ease;filter:drop-shadow(0 8px 20px rgba(107,111,249,0.25))}
 .dog-img:hover{transform:scale(1.1) rotate(2deg);filter:drop-shadow(0 12px 25px rgba(107,111,249,0.45))}
-/* gleiche Chart-Höhe für beide Ansichten */
-.view-air .city-chart,
-.view-overview .city-chart {
-  min-height: 240px;       /* gleiche Basisgröße */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* sorgt dafür, dass das Canvas immer voll ausgenutzt wird */
-.view-air canvas,
-.view-overview canvas {
-  width: 100% !important;
-  height: 240px !important;
-  display: block;
-}
-
-/* falls der Placeholder gezeigt wird */
-.chart-placeholder {
-  width: 100%;
-  height: 240px;
-}
