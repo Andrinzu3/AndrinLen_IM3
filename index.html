@@ -29,46 +29,23 @@
 
   <main class="hero">
     <div class="hero-inner">
-      <!-- ================= Map ================= -->
+      <!-- Karte -->
       <section class="map-wrap" aria-label="Karte von Indien">
         <div class="map">
           <img src="Assets/Karte/Element 3@3000x.png" alt="Karte von Indien (SVG/PNG)" />
-          <!-- Neu-Delhi -->
-          <div class="map-point" style="left: 30.7%; top: 30.5%;" title="Neu-Delhi">
-            <div class="pulse"></div>
-          </div>
-          <!-- Kochi -->
-          <div class="map-point" style="left: 29.6%; top: 92%;" title="Kochi">
-            <div class="pulse"></div>
-          </div>
-          <!-- Bangalore -->
-          <div class="map-point" style="left: 32.5%; top: 81.3%;" title="Bangalore">
-            <div class="pulse"></div>
-          </div>
-          <!-- Shillong -->
-          <div class="map-point" style="left: 80.8%; top: 41%;" title="Shillong">
-            <div class="pulse"></div>
-          </div>
-          <!-- Raipur -->
-          <div class="map-point" style="left: 47.2%; top: 54.6%;" title="Raipur">
-            <div class="pulse"></div>
-          </div>
-          <!-- Hyderabad -->
-          <div class="map-point" style="left: 34.6%; top: 70.0%;" title="Hyderabad">
-            <div class="pulse"></div>
-          </div>
-          <!-- Mumbai -->
-          <div class="map-point" style="left: 17%; top: 62.5%;" title="Mumbai">
-            <div class="pulse"></div>
-          </div>
-          <!-- Kanpur -->
-          <div class="map-point" style="left: 40.9%; top: 37.5%;" title="Kanpur">
-            <div class="pulse"></div>
-          </div>
+          <!-- Punkte -->
+          <div class="map-point" style="left: 30.7%; top: 30.5%;" title="Neu-Delhi"><div class="pulse"></div></div>
+          <div class="map-point" style="left: 29.6%; top: 92%;"   title="Kochi"><div class="pulse"></div></div>
+          <div class="map-point" style="left: 32.5%; top: 81.3%;" title="Bangalore"><div class="pulse"></div></div>
+          <div class="map-point" style="left: 80.8%; top: 41%;"   title="Shillong"><div class="pulse"></div></div>
+          <div class="map-point" style="left: 47.2%; top: 54.6%;" title="Raipur"><div class="pulse"></div></div>
+          <div class="map-point" style="left: 34.6%; top: 70%;"   title="Hyderabad"><div class="pulse"></div></div>
+          <div class="map-point" style="left: 17%;   top: 62.5%;" title="Mumbai"><div class="pulse"></div></div>
+          <div class="map-point" style="left: 40.9%; top: 37.5%;" title="Kanpur"><div class="pulse"></div></div>
         </div>
       </section>
 
-      <!-- ================= City Panel ================= -->
+      <!-- Panel -->
       <aside class="city-panel" aria-hidden="true">
         <div class="city-card">
           <button class="panel-close" aria-label="Schließen">×</button>
@@ -80,22 +57,13 @@
 
           <!-- Tabs -->
           <div class="panel-tabs" role="tablist" aria-label="Ansichten wählen">
-            <button class="tab-btn is-active"
-                    data-view="overview"
-                    role="tab"
-                    aria-controls="view-overview"
-                    aria-selected="true">Übersicht</button>
-            <button class="tab-btn"
-                    data-view="air"
-                    role="tab"
-                    aria-controls="view-air"
-                    aria-selected="false">Luftqualität</button>
+            <button class="tab-btn is-active" data-view="overview" role="tab" aria-controls="view-overview" aria-selected="true">Übersicht</button>
+            <button class="tab-btn" data-view="air" role="tab" aria-controls="view-air" aria-selected="false">Luftqualität</button>
           </div>
 
-          <!-- ===== Übersicht (Startansicht) ===== -->
+          <!-- Übersicht -->
           <div id="view-overview" class="view view-overview" aria-hidden="false" role="tabpanel" aria-labelledby="tab-overview">
             <section class="city-metrics">
-              <!-- Kachel ist klickbar und öffnet Luftqualität-Ansicht -->
               <div class="metric metric-aqi" role="button" tabindex="0" title="Luftqualität ansehen">
                 <span class="label">Luftqualität</span><span class="value">—</span>
               </div>
@@ -113,7 +81,7 @@
             </section>
           </div>
 
-          <!-- ===== Luftqualität ===== -->
+          <!-- Luftqualität -->
           <div id="view-air" class="view view-air hidden" aria-hidden="true" role="tabpanel" aria-labelledby="tab-air">
             <div class="view-head">
               <button class="back-link" data-back="overview">← Zurück</button>
@@ -121,18 +89,9 @@
             </div>
 
             <section class="aq-grid">
-              <div class="aq-item">
-                <span class="aq-label">PM₂.₅</span>
-                <span class="aq-value">—</span>
-              </div>
-              <div class="aq-item">
-                <span class="aq-label">CO</span>
-                <span class="aq-value">—</span>
-              </div>
-              <div class="aq-item">
-                <span class="aq-label">O₃</span>
-                <span class="aq-value">—</span>
-              </div>
+              <div class="aq-item"><span class="aq-label">PM₂.₅</span><span class="aq-value">—</span></div>
+              <div class="aq-item"><span class="aq-label">CO</span><span class="aq-value">—</span></div>
+              <div class="aq-item"><span class="aq-label">O₃</span><span class="aq-value">—</span></div>
             </section>
 
             <section class="city-chart">
@@ -140,7 +99,7 @@
             </section>
           </div>
 
-          <!-- Footer mit Monat -->
+          <!-- Footer -->
           <footer class="city-footer">
             <div class="select-wrap">
               <span class="select-label">Monat</span>
@@ -155,18 +114,15 @@
         </div>
       </aside>
 
-      <!-- ================= Right Headline ================= -->
+      <!-- Text rechts -->
       <section class="hero-copy">
         <h1 class="headline">
           <span class="accent">Stadt wählen.</span><br>
           <span class="big">Smog&nbsp;&amp;&nbsp;Stau </span>
           <span class="big">live sehen. </span>
         </h1>
-        <p class="lead">
-          Wähle eine Stadt auf der Karte, um&nbsp;Messdaten&nbsp;und&nbsp;Verkehrsinformationen in Echtzeit zu sehen.
-        </p>
+        <p class="lead">Wähle eine Stadt auf der Karte, um Messdaten und Verkehrsinformationen in Echtzeit zu sehen.</p>
       </section>
-
     </div>
   </main>
 
