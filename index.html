@@ -79,16 +79,13 @@
             </section>
 
             <section class="city-chart">
-              <canvas id="chart-overview" height="180"></canvas>
+              <canvas id="chart-overview"></canvas>
             </section>
           </div>
 
           <!-- Luftqualität -->
           <div id="view-air" class="view view-air hidden" aria-hidden="true" role="tabpanel" aria-labelledby="tab-air">
-            <div class="view-head">
-              <button class="back-link" data-back="overview">← Zurück</button>
-              <h3>Luftqualität</h3>
-            </div>
+           
 
             <section class="aq-grid">
               <div class="aq-item"><span class="aq-label">PM₂.₅</span><span class="aq-value">—</span></div>
@@ -112,6 +109,15 @@
                 <option>Oktober</option><option>November</option><option>Dezember</option>
               </select>
             </div>
+            <div class="select-wrap">
+            <span class="select-label">Jahr</span>
+            <select class="year-select">
+            <option>2025</option>
+            <option>2026</option>
+            <option>2027</option>
+  </select>
+</div>
+
           </footer>
         </div>
       </aside>

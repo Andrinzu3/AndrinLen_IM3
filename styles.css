@@ -130,7 +130,7 @@ body{
 .chips{display:flex;gap:10px;margin-top:4px}
 .chip{padding:8px 12px;border-radius:12px;font-weight:600;font-size:14px}
 .chip-aqi{background:#62a8ff}
-.chip-traffic{background:#6b6ff9}
+.chip-traffic{background:#d26bff}
 
 .city-chart{margin-top:10px}
 .city-card .city-footer{
@@ -139,7 +139,7 @@ body{
 .select-wrap{display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(111,189,255,0.28);padding:8px 12px;border-radius:12px;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.02)}
 .select-label{font-size:13px;color:var(--muted)}
 
-.month-select{
+  .month-select, .year-select{
   appearance:none;-webkit-appearance:none;-moz-appearance:none;background:transparent;border:0;color:var(--text);
   font:inherit;padding:6px 28px 6px 8px;border-radius:10px;cursor:pointer;position:relative;
   background-image:
@@ -147,7 +147,7 @@ body{
     url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="%23AFCBFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>');
   background-repeat:no-repeat;background-position:right 6px center;background-size:14px 14px;
 }
-.month-select:focus{outline:none;box-shadow:0 0 0 3px rgba(107,111,249,0.22);border-radius:10px}
+.month-select:focus{outline:none;box-shadow:0 0 0 0px rgba(107,111,249,0.22);border-radius:10px}
 
 /* Hide right copy when panel open */
 .panel-open .hero-copy{display:none;opacity:0;transform:translateY(8px);pointer-events:none}
@@ -219,10 +219,8 @@ body{
 /* Views */
 .view{display:block}
 .hidden{display:none}
-.view-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.view-head h3{margin:0;font-size:18px;letter-spacing:.2px}
-.back-link{background:transparent;color:var(--muted);border:0;cursor:pointer;padding:6px 8px;border-radius:10px}
-.back-link:hover{background:rgba(255,255,255,0.06);color:#fff}
+
+
 
 /* AQ */
 .aq-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:10px 0 4px}
@@ -230,9 +228,6 @@ body{
 .aq-label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
 .aq-value{font-weight:800;font-size:22px}
 
-/* Interaktive Kachel */
-.metric-aqi{cursor:pointer}
-.metric-aqi:hover{outline:2px solid rgba(107,111,249,0.35);outline-offset:2px;border-radius:10px}
 
 /* Tabs */
 .panel-tabs{display:flex;gap:8px;margin:-2px 0 10px}
@@ -257,3 +252,26 @@ body{
 .dog-img:hover{transform:scale(1.1) rotate(2deg);filter:drop-shadow(0 12px 25px rgba(107,111,249,0.45))}
 
 
+/* chart dimension
+
+/* gleiche Höhe für beide Charts */
+#chart-overview,
+#chart-air {
+  height: 240px !important; /* gewünschte Höhe */
+  width: 100% !important;
+}
+
+/* damit der Container mitzieht */
+.view-overview .city-chart,
+.view-air .city-chart {
+  min-height: 240px;
+}
+
+.chart-placeholder{
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:25px; color:rgba(206, 3, 3, 0.6);
+  background:rgba(255,255,255,0.02);
+  border-radius:14px; text-align:center;
+  margin-top: 150px;
+}

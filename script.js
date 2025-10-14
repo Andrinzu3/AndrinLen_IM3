@@ -11,6 +11,7 @@ const els = {
   overviewView: document.querySelector('.view-overview'),
   airView: document.querySelector('.view-air'),
   monthSelect: document.querySelector('.month-select'),
+  yearSelect: document.querySelector('.year-select'),
   chartPlaceholders: document.querySelectorAll('.view .chart-placeholder'),
   aqiValue: document.querySelector('.metric-aqi .value'),
   trafficValue: document.querySelector('.city-metrics .metric:nth-of-type(2) .value'),
@@ -113,7 +114,7 @@ function ensureCanvas(containerSel, id){
 function aqiLabel(v){
   if (v == null || Number.isNaN(v)) return '—';
   if (v <= 50)  return 'Gut';
-  if (v <= 100) return 'Mittel';
+  if (v <= 100) return 'Moderat';
   if (v <= 150) return 'Ungesund (Gr.)';
   if (v <= 200) return 'Ungesund';
   if (v <= 300) return 'Sehr ungesund';
@@ -215,6 +216,19 @@ function trimToDataWindow(labels, seriesList){
 }
 
 /* ===== Charts ===== */
+
+function showNoData(containerSel, message = "Keine Daten verfügbar") {
+  const container = document.querySelector(containerSel);
+  if (!container) return;
+
+  // Falls ein alter Canvas da ist, löschen
+  container.innerHTML = `
+    <div class="chart-placeholder">
+      ${message}
+    </div>
+  `;
+}
+
 function drawOverview(labels, aqi, traffic){
   if (typeof Chart === 'undefined') return;
   const ctx = ensureCanvas('.view-overview .city-chart', 'chart-overview');
@@ -242,8 +256,8 @@ function drawOverview(labels, aqi, traffic){
       },
       scales:{
         x:{ min:0, max:labels.length-1, grid:{ color:'rgba(255,255,255,.06)' }, ticks:{ color:'rgba(255,255,255,.55)', maxRotation:0, autoSkip:true }},
-        y:{ beginAtZero:true, position:'left', grid:{ color:'rgba(255,255,255,.06)' }, ticks:{ color:'rgba(255,255,255,.55)' }, title:{ display:true, text:'AQI', color:'rgba(255,255,255,.65)' }},
-        y1:{ beginAtZero:true, position:'right', grid:{ drawOnChartArea:false }, ticks:{ color:'rgba(255,255,255,.55)', callback:v=>`${v}%` }, title:{ display:true, text:'Verkehrsdichte (%)', color:'rgba(255,255,255,.65)' }},
+        y:{ beginAtZero:true, position:'left', grid:{ color:'rgba(255,255,255,.06)' }, ticks:{ color:'#62a8ff' }, title:{ display:true, text:'AQI', color:'#62a8ff' }},
+        y1:{ beginAtZero:true, position:'right', grid:{ drawOnChartArea:false }, ticks:{ color:'#d26bff', callback:v=>`${v}%` }, title:{ display:true, text:'Verkehrsdichte (%)', color:'#d26bff' }},
       }
     }
   });
@@ -274,8 +288,9 @@ function drawAir(labels, pm25, o3, co){
         tooltip:{ backgroundColor:'rgba(12,18,32,.95)', borderColor:'rgba(111,189,255,.35)', borderWidth:1, titleColor:'#fff', bodyColor:'rgba(255,255,255,.9)' }
       },
       scales:{
-        yPM:{ position:'left', beginAtZero:true, grid:{ color:'rgba(255,255,255,.06)' }, ticks:{ color:'#6bbf59' }, title:{ display:true, text:'PM₂.₅ (µg/m³)', color:'#6bbf59' }},
+        
         yO3:{ position:'left',  beginAtZero:true, grid:{ drawOnChartArea:false }, ticks:{ color:'#ffa046' }, title:{ display:true, text:'O₃ (µg/m³)', color:'#ffa046' }},
+        yPM:{ position:'left', beginAtZero:true, grid:{ color:'rgba(255,255,255,.06)' }, ticks:{ color:'#6bbf59' }, title:{ display:true, text:'PM₂.₅ (µg/m³)', color:'#6bbf59' }},
         yCO:{ position:'right', beginAtZero:true, grid:{ drawOnChartArea:false }, ticks:{ color:'#5fb0ff' }, title:{ display:true, text:'CO (µg/m³)', color:'#5fb0ff' }},
         x:{ min:0, max:labels.length-1, grid:{ color:'rgba(255,255,255,.06)' }, ticks:{ color:'rgba(255,255,255,.55)', maxRotation:0, autoSkip:true } }
       }
@@ -308,11 +323,12 @@ function showCity(name){
   currentCity = name;
 
   if (!RAW.length){
-    clearNumbers();
-    drawOverview([],[],[]);
-    drawAir([],[],[],[]);
-    return;
-  }
+  clearNumbers();
+  showNoData('.view-overview .city-chart');
+  showNoData('.view-air .city-chart');
+  return;
+}
+
 
   const rowsForCity = RAW
     .filter(r=>Number.isFinite(r.latitude) && Number.isFinite(r.longitude))
@@ -347,13 +363,19 @@ function showCity(name){
       : `Letztes Update: ${ts} • AQI ${latest.us_aqi ?? '—'} • Verkehr ${traf.pct ?? '—'}%`;
   });
 
-  let mIdx = -1;
-  if (els.monthSelect){
-    const val = els.monthSelect.value || els.monthSelect.options[els.monthSelect.selectedIndex]?.textContent || '';
-    mIdx = MONTHS_DE.indexOf(val);
-  }
-  if (mIdx < 0) mIdx = new Date(latest._ts).getMonth();
-  const year = new Date(latest._ts).getFullYear();
+ let mIdx = -1;
+if (els.monthSelect) {
+  const val = els.monthSelect.value || els.monthSelect.options[els.monthSelect.selectedIndex]?.textContent || '';
+  mIdx = MONTHS_DE.indexOf(val);
+}
+if (mIdx < 0) mIdx = new Date(latest._ts).getMonth();
+
+// Jahr aus Dropdown (oder aktuelles Jahr als Fallback)
+let year = new Date(latest._ts).getFullYear();
+if (els.yearSelect && els.yearSelect.value) {
+  year = Number(els.yearSelect.value);
+}
+
 
   const { labels, aqiSeries, trafSeries, pm25Series, o3Series, coSeries } =
     buildMonthlySeries(rowsForCity, year, mIdx);
@@ -362,16 +384,32 @@ function showCity(name){
   const L = trimmed.labels;
   const [AQI, TRAF, PM, O3, CO] = trimmed.series;
 
+  const hasAny = arr => Array.isArray(arr) && arr.some(v => v != null && !Number.isNaN(+v));
+
+const anyOverview = hasAny(AQI) || hasAny(TRAF);
+const anyAir      = hasAny(PM)  || hasAny(O3)   || hasAny(CO);
+
+// Overview-Chart
+if (!anyOverview) {
+  showNoData('.view-overview .city-chart');
+} else {
   drawOverview(L, AQI, TRAF);
+}
+
+// Air-Chart
+if (!anyAir) {
+  showNoData('.view-air .city-chart');
+} else {
   drawAir(L, PM, O3, CO);
+}
+
+
 }
 
 /* ===== Events ===== */
 els.tabs.forEach(btn => btn.addEventListener('click', () => showView(btn.dataset.view)));
-els.aqiTile?.addEventListener('click', () => showView('air'));
-els.aqiTile?.addEventListener('keydown', e => {
-  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showView('air'); }
-});
+
+
 document.querySelectorAll('[data-back="overview"]').forEach(btn => {
   btn.addEventListener('click', () => showView('overview'));
 });
@@ -387,6 +425,13 @@ if (els.monthSelect){
   });
 }
 
+if (els.yearSelect) {
+  els.yearSelect.addEventListener('change', () => {
+    if (currentCity) showCity(currentCity);
+  });
+}
+
+
 // Karte – CSS setzt den Cursor, JS nur Logik
 document.querySelectorAll('.map-point').forEach(el=>{
   el.addEventListener('click', async ()=>{
@@ -400,5 +445,36 @@ document.querySelectorAll('.map-point').forEach(el=>{
 // Start
 (async function init(){
   await fetchData();
+
+  // ===== Automatisch aktuellen Monat & Jahr setzen =====
+  const now = new Date();
+  const currentMonth = MONTHS_DE[now.getMonth()];
+  const currentYear  = now.getFullYear();
+
+  // Monat Dropdown setzen
+  if (els.monthSelect) {
+    const opt = Array.from(els.monthSelect.options).find(o =>
+      (o.value && o.value.trim() === currentMonth) ||
+      (o.textContent && o.textContent.trim() === currentMonth)
+    );
+    if (opt) els.monthSelect.value = opt.value || opt.textContent.trim();
+  }
+
+  // Jahr Dropdown setzen
+  if (els.yearSelect) {
+    const opt = Array.from(els.yearSelect.options).find(o =>
+      (o.value && o.value.trim() === String(currentYear)) ||
+      (o.textContent && o.textContent.trim() === String(currentYear))
+    );
+    if (opt) els.yearSelect.value = opt.value || opt.textContent.trim();
+    else {
+      // Fallback: falls z. B. 2028 nicht im Dropdown ist → letzte Option nehmen
+      const last = els.yearSelect.options[els.yearSelect.options.length - 1];
+      if (last) els.yearSelect.value = last.value || last.textContent.trim();
+    }
+  }
+
+  // Platzhalter aktualisieren
   updateMonthPlaceholder();
 })();
+
