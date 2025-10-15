@@ -232,7 +232,7 @@ function showNoData(containerSel, message = "Keine Daten verfügbar") {
     </div>
   `;
 }
-
+// chart AQI + Traffic
 function drawOverview(labels, aqi, traffic){
   if (typeof Chart === 'undefined') return;
   const ctx = ensureCanvas('.view-overview .city-chart', 'chart-overview');
@@ -256,18 +256,33 @@ function drawOverview(labels, aqi, traffic){
       interaction:{ mode:'index', intersect:false },
       plugins:{
         legend:{ display:true, labels:{ color:'rgba(255,255,255,.75)', boxWidth:16, boxHeight:2 } },
-        tooltip:{ backgroundColor:'rgba(12,18,32,.95)', borderColor:'rgba(111,189,255,.35)', borderWidth:1, titleColor:'#fff', bodyColor:'rgba(255,255,255,.9)' }
+        tooltip:{
+  backgroundColor:'rgba(12,18,32,.95)',
+  borderColor:'rgba(111,189,255,.35)',
+  borderWidth:1,
+  titleColor:'#fff',
+  bodyColor:'rgba(255,255,255,.9)',
+  callbacks:{
+    title(items){
+      const d = new Date(items[0].parsed.x ?? items[0].raw ?? items[0].label);
+      const dd = String(d.getDate()).padStart(2,'0');
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const hh = String(d.getHours()).padStart(2,'0'); // <-- 24h-Stunden
+      const mi = String(d.getMinutes()).padStart(2,'0');
+      return `${dd}.${mm}. ${hh}:${mi}`; // z. B. "13.10. 23:00"
+    }
+  }
+}
+
       },
       scales:{
-        x: {
+       x: {
   type: 'time',
- time: {
-  unit: 'hour',
-  stepSize: 1,
-  displayFormats: { hour: 'dd.MM. HH:mm' },
-  tooltipFormat: 'dd.MM. HH:mm'
-},
-
+  time: {
+    unit: 'day',
+    stepSize: 1,
+    displayFormats: { day: 'dd.MM.' }
+  },
   grid: { color:'rgba(255,255,255,.06)' },
   ticks: {
     color:'rgba(255,255,255,.55)',
@@ -288,7 +303,7 @@ function drawOverview(labels, aqi, traffic){
     }
   });
 }
-
+// chart Air Quality
 function drawAir(labels, pm25, o3, co){
   if (typeof Chart === 'undefined') return;
   const ctx = ensureCanvas('.view-air .city-chart', 'chart-air');
@@ -311,7 +326,24 @@ function drawAir(labels, pm25, o3, co){
       interaction:{ mode:'index', intersect:false },
       plugins:{
         legend:{ display:true, labels:{ color:'rgba(255,255,255,.75)', boxWidth:16, boxHeight:2 } },
-        tooltip:{ backgroundColor:'rgba(12,18,32,.95)', borderColor:'rgba(111,189,255,.35)', borderWidth:1, titleColor:'#fff', bodyColor:'rgba(255,255,255,.9)' }
+        tooltip:{
+  backgroundColor:'rgba(12,18,32,.95)',
+  borderColor:'rgba(111,189,255,.35)',
+  borderWidth:1,
+  titleColor:'#fff',
+  bodyColor:'rgba(255,255,255,.9)',
+  callbacks:{
+    title(items){
+      const d = new Date(items[0].parsed.x ?? items[0].raw ?? items[0].label);
+      const dd = String(d.getDate()).padStart(2,'0');
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const hh = String(d.getHours()).padStart(2,'0'); // <-- 24h-Stunden
+      const mi = String(d.getMinutes()).padStart(2,'0');
+      return `${dd}.${mm}. ${hh}:${mi}`; // z. B. "13.10. 23:00"
+    }
+  }
+}
+
       },
       scales:{
         
