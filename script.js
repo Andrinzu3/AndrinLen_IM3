@@ -556,4 +556,87 @@ document.querySelectorAll('.map-point').forEach(el=>{
   // Platzhalter aktualisieren
   updateMonthPlaceholder();
 })();
+// =====================================
+// Smartphone: "Stadt wählen" -> Dropdown
+// =====================================
+(function(){
+  const MQ = "(max-width: 600px)";
+  let applied = false;
+
+  // Mapping: Dropdown-Wert -> Anzeigename, den showCity/openPanel erwartet
+  // (Nutze hier exakt die Namen aus CITIES.key)
+  const VALUE_TO_NAME = {
+    delhi:     "Neu-Delhi",
+    mumbai:    "Mumbai",
+    kanpur:    "Kanpur",
+    hyderabad: "Hyderabad",
+    // optional ergänzen:
+    kochi:     "Kochi",
+    bangalore: "Bangalore",
+    shillong:  "Shillong",
+    raipur:    "Raipur",
+  };
+
+  function createCitySelect(accentEl){
+    if (!accentEl || applied) return;
+    applied = true;
+
+    const select = document.createElement('select');
+    select.className = 'city-select';
+    select.id = 'citySelect'; // <-- WICHTIG: ID setzen!
+
+    select.innerHTML = `
+      <option value="">Stadt wählen</option>
+      <option value="delhi">Delhi</option>
+      <option value="mumbai">Mumbai</option>
+      <option value="kanpur">Kanpur</option>
+      <option value="hyderabad">Hyderabad</option>
+      <option value="kochi">Kochi</option>
+      <option value="bangalore">Bangalore</option>
+      <option value="shillong">Shillong</option>
+      <option value="raipur">Raipur</option>
+    `;
+
+    // Text "Stadt wählen." ersetzen
+    accentEl.replaceWith(select);
+
+    // Auswahl -> Panel öffnen + Daten zeichnen (nutzt deine bestehende Logik)
+    select.addEventListener('change', async () => {
+      const val = select.value;
+      if (!val) return;
+      const name = VALUE_TO_NAME[val] || val; // Anzeigename ermitteln
+
+      // Dein Flow: Panel öffnen, ggf. Daten laden, City anzeigen
+      openPanel(name);
+      if (!RAW.length) await fetchData();
+      showCity(name);
+    });
+  }
+
+  function tryApply(){
+    const accent = document.querySelector('.hero-copy .headline .accent');
+    if (!accent) return;
+    if (window.matchMedia(MQ).matches) {
+      createCitySelect(accent);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', tryApply);
+  window.matchMedia(MQ).addEventListener('change', e => {
+    if (e.matches) tryApply();
+  });
+})();
+
+function resetCityPicker(){
+  const sel = document.getElementById('citySelect');
+  if (sel){
+    sel.selectedIndex = 0;   // zurück auf "Stadt wählen"
+    sel.blur();              // evtl. Fokus weg
+  }
+}
+function closePanel(){
+  document.body.classList.remove('panel-open');
+  els.panel?.setAttribute('aria-hidden','true');
+  resetCityPicker(); // <-- hier zurücksetzen
+}
 
