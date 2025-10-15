@@ -171,21 +171,24 @@ async function fetchData(){
   }
 }
 
-function buildMonthlySeries(rowsForCity, year, m0){
-  const filtered = rowsForCity.filter(r=>{
-    const d=new Date(r._ts);
-    return d.getFullYear()===year && d.getMonth()===m0;
-  });
+// === NEU: Stundenweise Aggregation ===
+function buildHourlySeries(rowsForCity, year, m0){
+  const start = new Date(year, m0, 1, 0, 0, 0);
+  const end   = new Date(year, m0 + 1, 1, 0, 0, 0);
 
-  const byDay = new Map();
-  for (const r of filtered){
-    const d=new Date(r._ts);
-    const day=d.getDate();
-    const trafPct=(Number.isFinite(r.akt_geschw)&&Number.isFinite(r.fre_geschw)&&r.fre_geschw>0)
+  const buckets = new Map(); // key: 'YYYY-MM-DDTHH'
+  for (const r of rowsForCity){
+    const d = new Date(r._ts);
+    if (d < start || d >= end) continue;
+
+    const hh  = pad2(d.getHours());
+    const key = `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}T${hh}`;
+    let b = buckets.get(key);
+    if (!b){ b = { aqi:[], traf:[], pm25:[], o3:[], co:[] }; buckets.set(key, b); }
+
+    const trafPct = (Number.isFinite(r.akt_geschw)&&Number.isFinite(r.fre_geschw)&&r.fre_geschw>0)
       ? (1 - r.akt_geschw / r.fre_geschw) * 100 : null;
 
-    if (!byDay.has(day)) byDay.set(day, { aqi:[], traf:[], pm25:[], o3:[], co:[] });
-    const b=byDay.get(day);
     if (Number.isFinite(r.us_aqi)) b.aqi.push(+r.us_aqi);
     if (Number.isFinite(trafPct))   b.traf.push(trafPct);
     if (Number.isFinite(r.pm25))    b.pm25.push(+r.pm25);
@@ -193,18 +196,19 @@ function buildMonthlySeries(rowsForCity, year, m0){
     if (Number.isFinite(r.co))      b.co.push(+r.co);
   }
 
-  const numDays = daysInMonth(year, m0);
-  const labels=[], aqiSeries=[], trafSeries=[], pm25Series=[], o3Series=[], coSeries=[];
   const avg = arr => arr.length ? Math.round(arr.reduce((s,v)=>s+v,0)/arr.length) : null;
 
-  for (let day=1; day<=numDays; day++){
-    labels.push(`${pad2(day)}.${pad2(m0+1)}.`);
-    const b=byDay.get(day);
+  const labels=[], aqiSeries=[], trafSeries=[], pm25Series=[], o3Series=[], coSeries=[];
+  for (let t = new Date(start); t < end; t.setHours(t.getHours()+1)){
+    const key = `${t.getFullYear()}-${pad2(t.getMonth()+1)}-${pad2(t.getDate())}T${pad2(t.getHours())}`;
+    labels.push(`${t.getFullYear()}-${pad2(t.getMonth()+1)}-${pad2(t.getDate())}T${pad2(t.getHours())}:00`);
+    const b = buckets.get(key);
     if (!b){ aqiSeries.push(null); trafSeries.push(null); pm25Series.push(null); o3Series.push(null); coSeries.push(null); }
-    else{ aqiSeries.push(avg(b.aqi)); trafSeries.push(avg(b.traf)); pm25Series.push(avg(b.pm25)); o3Series.push(avg(b.o3)); coSeries.push(avg(b.co)); }
+    else   { aqiSeries.push(avg(b.aqi)); trafSeries.push(avg(b.traf)); pm25Series.push(avg(b.pm25)); o3Series.push(avg(b.o3)); coSeries.push(avg(b.co)); }
   }
   return { labels, aqiSeries, trafSeries, pm25Series, o3Series, coSeries };
 }
+
 
 function trimToDataWindow(labels, seriesList){
   if (!labels.length) return { labels, series: seriesList.map(()=>[]) };
@@ -255,7 +259,29 @@ function drawOverview(labels, aqi, traffic){
         tooltip:{ backgroundColor:'rgba(12,18,32,.95)', borderColor:'rgba(111,189,255,.35)', borderWidth:1, titleColor:'#fff', bodyColor:'rgba(255,255,255,.9)' }
       },
       scales:{
-        x:{ min:0, max:labels.length-1, grid:{ color:'rgba(255,255,255,.06)' }, ticks:{ color:'rgba(255,255,255,.55)', maxRotation:0, autoSkip:true }},
+        x: {
+  type: 'time',
+ time: {
+  unit: 'hour',
+  stepSize: 1,
+  displayFormats: { hour: 'dd.MM. HH:mm' },
+  tooltipFormat: 'dd.MM. HH:mm'
+},
+
+  grid: { color:'rgba(255,255,255,.06)' },
+  ticks: {
+    color:'rgba(255,255,255,.55)',
+    maxRotation: 0,
+    autoSkip: true,
+    callback: (v, i, t) => {
+      const d  = new Date(t[i].value);
+      const dd = String(d.getDate()).padStart(2,'0');
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      return `${dd}.${mm}.`;
+    }
+  }
+},
+
         y:{ beginAtZero:true, position:'left', grid:{ color:'rgba(255,255,255,.06)' }, ticks:{ color:'#62a8ff' }, title:{ display:true, text:'AQI', color:'#62a8ff' }},
         y1:{ beginAtZero:true, position:'right', grid:{ drawOnChartArea:false }, ticks:{ color:'#d26bff', callback:v=>`${v}%` }, title:{ display:true, text:'Verkehrsdichte (%)', color:'#d26bff' }},
       }
@@ -292,7 +318,27 @@ function drawAir(labels, pm25, o3, co){
         yO3:{ position:'left',  beginAtZero:true, grid:{ drawOnChartArea:false }, ticks:{ color:'#ffa046' }, title:{ display:true, text:'O₃ (µg/m³)', color:'#ffa046' }},
         yPM:{ position:'left', beginAtZero:true, grid:{ color:'rgba(255,255,255,.06)' }, ticks:{ color:'#6bbf59' }, title:{ display:true, text:'PM₂.₅ (µg/m³)', color:'#6bbf59' }},
         yCO:{ position:'right', beginAtZero:true, grid:{ drawOnChartArea:false }, ticks:{ color:'#5fb0ff' }, title:{ display:true, text:'CO (µg/m³)', color:'#5fb0ff' }},
-        x:{ min:0, max:labels.length-1, grid:{ color:'rgba(255,255,255,.06)' }, ticks:{ color:'rgba(255,255,255,.55)', maxRotation:0, autoSkip:true } }
+        x: {
+  type: 'time',
+  time: {
+    unit: 'day',
+    stepSize: 1,
+    displayFormats: { day: 'dd.MM.' }
+  },
+  grid: { color:'rgba(255,255,255,.06)' },
+  ticks: {
+    color:'rgba(255,255,255,.55)',
+    maxRotation: 0,
+    autoSkip: true,
+    callback: (v, i, t) => {
+      const d  = new Date(t[i].value);
+      const dd = String(d.getDate()).padStart(2,'0');
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      return `${dd}.${mm}.`;
+    }
+  }
+}
+
       }
     }
   });
@@ -378,7 +424,8 @@ if (els.yearSelect && els.yearSelect.value) {
 
 
   const { labels, aqiSeries, trafSeries, pm25Series, o3Series, coSeries } =
-    buildMonthlySeries(rowsForCity, year, mIdx);
+  buildHourlySeries(rowsForCity, year, mIdx);
+
 
   const trimmed = trimToDataWindow(labels, [aqiSeries, trafSeries, pm25Series, o3Series, coSeries]);
   const L = trimmed.labels;
