@@ -70,10 +70,10 @@ function showView(which){
   setAriaSelected(els.tabs, which);
 
   // Chart.js: neu beide Charts sauber resizen, wenn sichtbar werden
-  requestAnimationFrame(()=>{
-    if (isOverview && chartOverview) chartOverview.resize();
-    if (isAir && chartAir) chartAir.resize();
-  });
+  // requestAnimationFrame(()=>{
+  //   if (isOverview && chartOverview) chartOverview.resize();
+  //   if (isAir && chartAir) chartAir.resize();
+  // });
 
   updateMonthPlaceholder(); // damit Platzhaltertext den aktiven View korrekt benennt
 }
@@ -231,6 +231,8 @@ function showNoData(containerSel, message = "Keine Daten verfügbar") {
       ${message}
     </div>
   `;
+
+  
 }
 // chart AQI + Traffic
 function drawOverview(labels, aqi, traffic){
@@ -252,6 +254,22 @@ function drawOverview(labels, aqi, traffic){
       ]
     },
     options:{
+        animations:{
+          x:{ type:'number', duration:0 },
+          y:{
+            type:'number',
+            duration:900,
+            easing:'easeOutCubic',
+            from(ctx){
+              const chart = ctx.chart;
+              const meta  = chart.getDatasetMeta(ctx.datasetIndex);
+              const yId   = meta.yAxisID || 'yPM';           // richtige Y-Achse pro Datensatz
+              const scale = chart.scales[yId];
+              const startVal = Math.max(0, scale.min ?? 0);  // von 0 (oder Achsenminimum) starten
+              return scale.getPixelForValue(startVal);
+            }
+          }
+        },
       responsive:true, maintainAspectRatio:false,
       interaction:{ mode:'index', intersect:false },
       plugins:{
@@ -322,6 +340,22 @@ function drawAir(labels, pm25, o3, co){
       ]
     },
     options:{
+        animations:{
+          x:{ type:'number', duration:0 },
+          y:{
+            type:'number',
+            duration:900,
+            easing:'easeOutCubic',
+            from(ctx){
+              const chart = ctx.chart;
+              const meta  = chart.getDatasetMeta(ctx.datasetIndex);
+              const yId   = meta.yAxisID || 'yPM';           // richtige Y-Achse pro Datensatz
+              const scale = chart.scales[yId];
+              const startVal = Math.max(0, scale.min ?? 0);  // von 0 (oder Achsenminimum) starten
+              return scale.getPixelForValue(startVal);
+            }
+          }
+        },
       responsive:true, maintainAspectRatio:false,
       interaction:{ mode:'index', intersect:false },
       plugins:{

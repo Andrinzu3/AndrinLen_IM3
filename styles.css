@@ -841,6 +841,117 @@ body{
   text-align:center;
 }
 
+
+/* =========================================
+   Tablet (zwischen Phone und Desktop)
+   ========================================= */
+@media (max-width: 1024px){
+
+  /* Basisabstaende & Typo */
+  :root{
+    --gutter: 32px;
+  }
+  body{ padding: 24px; }
+  .site-header{ padding: 12px 0; }
+
+  /* Navigation */
+  .main-nav{
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+  .nav-link{ font-size: 14px; }
+
+  /* Layout-Wrapper */
+  .container{
+    max-width: min(1100px, 94vw);
+    margin: 0 auto;
+    padding: 0 var(--gutter);
+  }
+
+  /* Hero */
+  .hero{
+    padding: 0 var(--gutter);
+  }
+  .hero-inner{
+    display: grid;
+    grid-template-columns: 1.2fr 1fr; /* Text : Visual/Map */
+    gap: 28px;
+    min-height: auto;
+    align-items: center;
+  }
+  .hero-copy{
+    max-width: 640px;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+  }
+  .headline{
+    font-size: clamp(28px, 4.2vw, 36px);
+    line-height: 1.15;
+  }
+  .subhead{ font-size: 16px; }
+
+  /* Karte / Map */
+  .map-wrap{
+    padding-left: 0;
+  }
+  .map{
+    width: 100%;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .map img{
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 18px 36px rgba(0,0,0,.45));
+  }
+
+  /* City Panel / Detailbereich */
+  .city-panel{
+    position: relative;
+    inset: unset;
+    width: 100%;
+    max-width: 960px;
+    margin: 24px auto 0;
+    padding: 20px;
+    border-radius: 16px;
+  }
+  .panel-tabs{
+    gap: 10px;
+  }
+  .panel-tabs .tab-btn{
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  /* Kennzahlen/Kacheln */
+  .city-metrics{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .metric .label{ font-size: 12px; }
+  .metric .value{ font-size: 22px; }
+
+  /* Charts */
+  .view .chart-placeholder{
+    height: 280px; /* Tablets: etwas niedriger als Desktop, hoeher als Phone */
+  }
+  .view-overview .city-chart,
+  .view-air .city-chart{
+    max-height: 320px;
+  }
+
+  /* Footer / Kleinkram */
+  .site-footer{
+    padding: 16px 0 0;
+    font-size: 12px;
+    opacity: .85;
+  }
+}
+
+
 /* =========================================
    Smartphones / kleine Screens (≤ 600px)
    ========================================= */
