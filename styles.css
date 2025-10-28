@@ -840,115 +840,104 @@ body{
   position:absolute;
   text-align:center;
 }
-
-
 /* =========================================
-   Tablet (zwischen Phone und Desktop)
+   Tablet (601–1024px)
    ========================================= */
-@media (max-width: 1024px){
+@media (min-width:601px) and (max-width:1024px){
 
-  /* Basisabstaende & Typo */
+  /* Basis */
   :root{
-    --gutter: 32px;
+    --gutter:32px;
   }
-  body{ padding: 24px; }
-  .site-header{ padding: 12px 0; }
+  body{ padding:24px; }
 
-  /* Navigation */
-  .main-nav{
-    display: flex;
-    gap: 16px;
-    align-items: center;
-  }
-  .nav-link{ font-size: 14px; }
-
-  /* Layout-Wrapper */
+  /* Container */
   .container{
     max-width: min(1100px, 94vw);
     margin: 0 auto;
     padding: 0 var(--gutter);
   }
 
+  /* Header / Navigation */
+  .site-header{ padding:12px 0; }
+  .main-nav{
+    display:flex;
+    gap:16px;
+    align-items:center;
+  }
+  .nav-link{ font-size:14px; }
+
   /* Hero */
   .hero{
     padding: 0 var(--gutter);
   }
   .hero-inner{
-    display: grid;
-    grid-template-columns: 1.2fr 1fr; /* Text : Visual/Map */
-    gap: 28px;
-    min-height: auto;
-    align-items: center;
+    display:grid;
+    grid-template-columns: 1.2fr 1fr; /* Karte : Text */
+    align-items:center;
+    column-gap: clamp(16px, 4vw, 32px);
+    min-height: 68vh;
   }
-  .hero-copy{
-    max-width: 640px;
-    padding: 0;
-    margin: 0;
-    text-align: left;
-  }
-  .headline{
-    font-size: clamp(28px, 4.2vw, 36px);
-    line-height: 1.15;
-  }
-  .subhead{ font-size: 16px; }
 
-  /* Karte / Map */
+  /* Karte links */
   .map-wrap{
-    padding-left: 0;
+    justify-self:start;
+    padding-left:0;
   }
   .map{
-    width: 100%;
-    max-width: 640px;
-    margin: 0 auto;
+    width: min(60vw, 540px);
+    max-width: 100%;
+    height:auto;
+    display:block;
+    filter: drop-shadow(0 24px 48px rgba(0,0,0,.45));
   }
-  .map img{
-    width: 100%;
-    height: auto;
-    filter: drop-shadow(0 18px 36px rgba(0,0,0,.45));
+  .city-dot{
+    width:12px; height:12px;
+    margin:-6px 0 0 -6px;
   }
 
-  /* City Panel / Detailbereich */
+  /* Text rechts */
+  .hero-copy{
+    max-width: 520px;
+    align-items:flex-end;     /* Elemente am rechten Rand ausrichten */
+    text-align:right;         /* Text rechtsbündig */
+    gap:12px;
+    padding:0;
+    margin:0;
+  }
+  .headline{
+    font-size: clamp(40px, 6vw, 64px);
+    line-height: 1.05;
+    letter-spacing: -.01em;
+  }
+  .subline{
+    font-size: clamp(18px, 2.2vw, 22px);
+    line-height: 1.4;
+    max-width: 46ch;
+    color: var(--muted);
+  }
+  .cta-row{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    justify-content:flex-end; /* Buttons auch rechtsbündig */
+  }
+  .btn{
+    padding:12px 18px;
+    font-size:14px;
+    border-radius:12px;
+  }
+
+  /* Panel / Detailansicht */
   .city-panel{
-    position: relative;
-    inset: unset;
-    width: 100%;
-    max-width: 960px;
-    margin: 24px auto 0;
-    padding: 20px;
-    border-radius: 16px;
-  }
-  .panel-tabs{
-    gap: 10px;
-  }
-  .panel-tabs .tab-btn{
-    padding: 8px 12px;
-    font-size: 14px;
+    width: min(92vw, 860px);
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
   }
 
-  /* Kennzahlen/Kacheln */
-  .city-metrics{
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-  }
-  .metric .label{ font-size: 12px; }
-  .metric .value{ font-size: 22px; }
-
-  /* Charts */
-  .view .chart-placeholder{
-    height: 280px; /* Tablets: etwas niedriger als Desktop, hoeher als Phone */
-  }
-  .view-overview .city-chart,
-  .view-air .city-chart{
-    max-height: 320px;
-  }
-
-  /* Footer / Kleinkram */
-  .site-footer{
-    padding: 16px 0 0;
-    font-size: 12px;
-    opacity: .85;
-  }
+  /* Footer */
+  .site-footer{ padding:16px 0; }
 }
 
 
@@ -993,6 +982,7 @@ body{
     max-width:none;
     transform:scale(1.05);
     transition:transform .4s ease;
+  
   }
   .map img{ filter:drop-shadow(0 20px 40px rgba(0,0,0,.5)); }
 
