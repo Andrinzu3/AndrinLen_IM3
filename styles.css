@@ -840,111 +840,17 @@ body{
   position:absolute;
   text-align:center;
 }
-/* =========================================
-   Tablet (601–1024px)
-   ========================================= */
-@media (min-width:601px) and (max-width:1024px){
 
-  /* Basis */
-  :root{
-    --gutter:32px;
-  }
-  body{ padding:24px; }
+@media (max-width:1400px){
 
-  /* Container */
-  .container{
-    max-width: min(1100px, 94vw);
-    margin: 0 auto;
-    padding: 0 var(--gutter);
-  }
-
-  /* Header / Navigation */
-  .site-header{ padding:12px 0; }
-  .main-nav{
-    display:flex;
-    gap:16px;
-    align-items:center;
-  }
-  .nav-link{ font-size:14px; }
-
-  /* Hero */
-  .hero{
-    padding: 0 var(--gutter);
-  }
-  .hero-inner{
-    display:grid;
-    grid-template-columns: 1.2fr 1fr; /* Karte : Text */
-    align-items:center;
-    column-gap: clamp(16px, 4vw, 32px);
-    min-height: 68vh;
-  }
-
-  /* Karte links */
-  .map-wrap{
-    justify-self:start;
-    padding-left:0;
-  }
-  .map{
-    width: min(60vw, 540px);
-    max-width: 100%;
-    height:auto;
-    display:block;
-    filter: drop-shadow(0 24px 48px rgba(0,0,0,.45));
-  }
-  .city-dot{
-    width:12px; height:12px;
-    margin:-6px 0 0 -6px;
-  }
-
-  /* Text rechts */
-  .hero-copy{
-    max-width: 520px;
-    align-items:flex-end;     /* Elemente am rechten Rand ausrichten */
-    text-align:right;         /* Text rechtsbündig */
-    gap:12px;
-    padding:0;
-    margin:0;
-  }
-  .headline{
-    font-size: clamp(40px, 6vw, 64px);
-    line-height: 1.05;
-    letter-spacing: -.01em;
-  }
-  .subline{
-    font-size: clamp(18px, 2.2vw, 22px);
-    line-height: 1.4;
-    max-width: 46ch;
-    color: var(--muted);
-  }
-  .cta-row{
-    display:flex;
-    gap:12px;
-    flex-wrap:wrap;
-    justify-content:flex-end; /* Buttons auch rechtsbündig */
-  }
-  .btn{
-    padding:12px 18px;
-    font-size:14px;
-    border-radius:12px;
-  }
-
-  /* Panel / Detailansicht */
-  .city-panel{
-    width: min(92vw, 860px);
-    right: auto;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-
-  /* Footer */
-  .site-footer{ padding:16px 0; }
+  .hero {padding: 0px;}
 }
 
 
 /* =========================================
    Smartphones / kleine Screens (≤ 600px)
    ========================================= */
-@media (max-width:600px){
+@media (max-width:900px){
 
   /* ---------- Basis & Navigation ---------- */
   body{ padding:16px; }
@@ -979,7 +885,7 @@ body{
   .map-wrap{ padding-left:0; }
   .map{
     width:100%;
-    max-width:none;
+    max-width:500px;
     transform:scale(1.05);
     transition:transform .4s ease;
   
