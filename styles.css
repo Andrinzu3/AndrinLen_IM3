@@ -841,6 +841,18 @@ body{
   text-align:center;
 }
 
+/*Burger Menu */
+.nav-toggle{
+  display:none;
+  width:44px; height:36px;
+  border:0; background:transparent; padding:0; cursor:pointer;
+}
+.nav-toggle .bar{
+  display:block; height:2px; margin:7px 0;
+  background: rgba(255,255,255,.9);
+  transition: transform .25s ease, opacity .25s ease;
+}
+
 @media (max-width:1400px){
 
   .hero {padding: 0px;}
@@ -852,10 +864,15 @@ body{
    ========================================= */
 @media (max-width:900px){
 
+
+  
   /* ---------- Basis & Navigation ---------- */
   body{ padding:16px; }
   .site-header{ padding:8px 0; }
-  .main-nav{ display:none; }
+  .main-nav {
+    display: flex; /* oder block, je nach Layout */
+    gap: 16px;
+  }
 
   /* ---------- Hero-Layout ---------- */
   .hero{ padding:0 16px; }
