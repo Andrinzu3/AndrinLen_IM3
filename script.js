@@ -591,86 +591,91 @@ document.querySelectorAll('.map-point').forEach(el=>{
   updateMonthPlaceholder();
 })();
 // =====================================
-// Smartphone: "Stadt wählen" -> Dropdown
+// Smartphone: "Stadt wählen" -> Dropdown (Responsive Switch)
 // =====================================
 (function(){
-  const MQ = "(max-width: 600px)";
-  let applied = false;
+  // Tipp: Hier den Wert anpassen, wann der Switch passieren soll (z.B. 900px passend zum CSS)
+  const MQ = window.matchMedia("(max-width: 900px)"); 
 
-  // Mapping: Dropdown-Wert -> Anzeigename, den showCity/openPanel erwartet
-  // (Nutze hier exakt die Namen aus CITIES.key)
   const VALUE_TO_NAME = {
     delhi:     "Neu-Delhi",
     mumbai:    "Mumbai",
     kanpur:    "Kanpur",
     hyderabad: "Hyderabad",
-    // optional ergänzen:
     kochi:     "Kochi",
     bangalore: "Bangalore",
     shillong:  "Shillong",
     raipur:    "Raipur",
   };
 
-  function createCitySelect(accentEl){
-    if (!accentEl || applied) return;
-    applied = true;
+  function handleResponsiveLayout() {
+    const accentEl = document.querySelector('.hero-copy .headline .accent');
+    if (!accentEl) return;
 
-    const select = document.createElement('select');
-    select.className = 'city-select';
-    select.id = 'citySelect'; // <-- WICHTIG: ID setzen!
+    // Prüfen, ob das Dropdown schon existiert
+    let select = document.getElementById('citySelect');
 
-    select.innerHTML = `
-      <option value="">Stadt wählen</option>
-      <option value="delhi">Delhi</option>
-      <option value="mumbai">Mumbai</option>
-      <option value="kanpur">Kanpur</option>
-      <option value="hyderabad">Hyderabad</option>
-      <option value="kochi">Kochi</option>
-      <option value="bangalore">Bangalore</option>
-      <option value="shillong">Shillong</option>
-      <option value="raipur">Raipur</option>
-    `;
+    // 1. Dropdown einmalig erstellen, falls noch nicht da
+    if (!select) {
+      select = document.createElement('select');
+      select.className = 'city-select';
+      select.id = 'citySelect';
+      
+      select.innerHTML = `
+        <option value="">Stadt wählen</option>
+        <option value="delhi">Delhi</option>
+        <option value="mumbai">Mumbai</option>
+        <option value="kanpur">Kanpur</option>
+        <option value="hyderabad">Hyderabad</option>
+        <option value="kochi">Kochi</option>
+        <option value="bangalore">Bangalore</option>
+        <option value="shillong">Shillong</option>
+        <option value="raipur">Raipur</option>
+      `;
 
-    // Text "Stadt wählen." ersetzen
-    accentEl.replaceWith(select);
+      // WICHTIG: Nicht ersetzen (replaceWith), sondern daneben einfügen!
+      accentEl.after(select);
 
-    // Auswahl -> Panel öffnen + Daten zeichnen (nutzt deine bestehende Logik)
-    select.addEventListener('change', async () => {
-      const val = select.value;
-      if (!val) return;
-      const name = VALUE_TO_NAME[val] || val; // Anzeigename ermitteln
+      // Event Listener hinzufügen
+      select.addEventListener('change', async () => {
+        const val = select.value;
+        if (!val) return;
+        const name = VALUE_TO_NAME[val] || val;
+        openPanel(name);
+        if (!RAW.length) await fetchData();
+        showCity(name);
+      });
+    }
 
-      // Dein Flow: Panel öffnen, ggf. Daten laden, City anzeigen
-      openPanel(name);
-      if (!RAW.length) await fetchData();
-      showCity(name);
-    });
-  }
-
-  function tryApply(){
-    const accent = document.querySelector('.hero-copy .headline .accent');
-    if (!accent) return;
-    if (window.matchMedia(MQ).matches) {
-      createCitySelect(accent);
+    // 2. Sichtbarkeit umschalten je nach Bildschirmgröße
+    if (MQ.matches) {
+      // MOBILE: Text ausblenden, Dropdown zeigen
+      accentEl.style.display = 'none';
+      select.style.display = 'inline-block';
+    } else {
+      // DESKTOP: Text zeigen, Dropdown ausblenden
+      accentEl.style.display = ''; // Setzt es auf Standard zurück (meist inline)
+      select.style.display = 'none';
     }
   }
 
-  document.addEventListener('DOMContentLoaded', tryApply);
-  window.matchMedia(MQ).addEventListener('change', e => {
-    if (e.matches) tryApply();
-  });
+  // Initial ausführen
+  document.addEventListener('DOMContentLoaded', handleResponsiveLayout);
+  
+  // Bei Größenänderung des Fensters ausführen
+  MQ.addEventListener('change', handleResponsiveLayout);
 })();
 
 function resetCityPicker(){
   const sel = document.getElementById('citySelect');
   if (sel){
-    sel.selectedIndex = 0;   // zurück auf "Stadt wählen"
-    sel.blur();              // evtl. Fokus weg
+    sel.selectedIndex = 0;
+    sel.blur();
   }
 }
+
 function closePanel(){
   document.body.classList.remove('panel-open');
   els.panel?.setAttribute('aria-hidden','true');
-  resetCityPicker(); // <-- hier zurücksetzen
+  resetCityPicker();
 }
-
