@@ -1,5 +1,6 @@
 // Jahr im Footer
-document.getElementById('year').textContent = new Date().getFullYear();
+const yearEl = document.getElementById('year');
+if (yearEl) yearEl.textContent = new Date().getFullYear();
 
 // --- Elemente
 const els = {
@@ -44,7 +45,6 @@ let RAW = [];
 
 /* ===== Helpers ===== */
 const pad2 = n => String(n).padStart(2,'0');
-function daysInMonth(y, m0){ return new Date(y, m0 + 1, 0).getDate(); }
 
 function setAriaSelected(btns, view){
   btns.forEach(b=>{
@@ -68,14 +68,7 @@ function showView(which){
   }
 
   setAriaSelected(els.tabs, which);
-
-  // Chart.js: neu beide Charts sauber resizen, wenn sichtbar werden
-  // requestAnimationFrame(()=>{
-  //   if (isOverview && chartOverview) chartOverview.resize();
-  //   if (isAir && chartAir) chartAir.resize();
-  // });
-
-  updateMonthPlaceholder(); // damit Platzhaltertext den aktiven View korrekt benennt
+  updateMonthPlaceholder();
 }
 
 function openPanel(cityName){
@@ -88,6 +81,7 @@ function openPanel(cityName){
 function closePanel(){
   document.body.classList.remove('panel-open');
   els.panel?.setAttribute('aria-hidden','true');
+  resetCityPicker();
 }
 
 function gradient(ctx, h, c1, c2){
@@ -105,7 +99,6 @@ function ensureCanvas(containerSel, id){
     container.innerHTML = '';
     canvas = document.createElement('canvas');
     canvas.id = id;
-    // keine feste Höhe mehr -> wird komplett via CSS gesteuert
     container.appendChild(canvas);
   }
   return canvas.getContext('2d');
@@ -171,12 +164,12 @@ async function fetchData(){
   }
 }
 
-// === NEU: Stundenweise Aggregation ===
+// === Stundenweise Aggregation ===
 function buildHourlySeries(rowsForCity, year, m0){
   const start = new Date(year, m0, 1, 0, 0, 0);
   const end   = new Date(year, m0 + 1, 1, 0, 0, 0);
 
-  const buckets = new Map(); // key: 'YYYY-MM-DDTHH'
+  const buckets = new Map();
   for (const r of rowsForCity){
     const d = new Date(r._ts);
     if (d < start || d >= end) continue;
@@ -224,17 +217,10 @@ function trimToDataWindow(labels, seriesList){
 function showNoData(containerSel, message = "Keine Daten verfügbar") {
   const container = document.querySelector(containerSel);
   if (!container) return;
-
-  // Falls ein alter Canvas da ist, löschen
-  container.innerHTML = `
-    <div class="chart-placeholder">
-      ${message}
-    </div>
-  `;
-
-  
+  container.innerHTML = `<div class="chart-placeholder">${message}</div>`;
 }
-// chart AQI + Traffic
+
+// chart AQI + Traffic (NORMAL DATA, NO TITLES ON MOBILE)
 function drawOverview(labels, aqi, traffic){
   if (typeof Chart === 'undefined') return;
   const ctx = ensureCanvas('.view-overview .city-chart', 'chart-overview');
@@ -243,6 +229,9 @@ function drawOverview(labels, aqi, traffic){
 
   const gAQI = gradient(ctx, 220, 'rgba(98,168,255,0.35)', 'rgba(98,168,255,0.00)');
   const gTRA = gradient(ctx, 220, 'rgba(210,107,255,0.35)', 'rgba(210,107,255,0.00)');
+  
+  // Mobile Check
+  const isMobile = window.innerWidth < 900;
 
   chartOverview = new Chart(ctx, {
     type:'line',
@@ -254,157 +243,157 @@ function drawOverview(labels, aqi, traffic){
       ]
     },
     options:{
-        animations:{
-          x:{ type:'number', duration:0 },
-          y:{
-            type:'number',
-            duration:900,
-            easing:'easeOutCubic',
-            from(ctx){
-              const chart = ctx.chart;
-              const meta  = chart.getDatasetMeta(ctx.datasetIndex);
-              const yId   = meta.yAxisID || 'yPM';           // richtige Y-Achse pro Datensatz
-              const scale = chart.scales[yId];
-              const startVal = Math.max(0, scale.min ?? 0);  // von 0 (oder Achsenminimum) starten
-              return scale.getPixelForValue(startVal);
-            }
-          }
-        },
+      animations:{ x:{ type:'number', duration:0 } },
       responsive:true, maintainAspectRatio:false,
       interaction:{ mode:'index', intersect:false },
       plugins:{
         legend:{ display:true, labels:{ color:'rgba(255,255,255,.75)', boxWidth:16, boxHeight:2 } },
         tooltip:{
-  backgroundColor:'rgba(12,18,32,.95)',
-  borderColor:'rgba(111,189,255,.35)',
-  borderWidth:1,
-  titleColor:'#fff',
-  bodyColor:'rgba(255,255,255,.9)',
-  callbacks:{
-    title(items){
-      const d = new Date(items[0].parsed.x ?? items[0].raw ?? items[0].label);
-      const dd = String(d.getDate()).padStart(2,'0');
-      const mm = String(d.getMonth()+1).padStart(2,'0');
-      const hh = String(d.getHours()).padStart(2,'0'); // <-- 24h-Stunden
-      const mi = String(d.getMinutes()).padStart(2,'0');
-      return `${dd}.${mm}. ${hh}:${mi}`; // z. B. "13.10. 23:00"
-    }
-  }
-}
-
+          backgroundColor:'rgba(12,18,32,.95)',
+          borderColor:'rgba(111,189,255,.35)',
+          borderWidth:1,
+          titleColor:'#fff',
+          bodyColor:'rgba(255,255,255,.9)',
+          callbacks:{
+            title(items){
+              const d = new Date(items[0].parsed.x ?? items[0].raw ?? items[0].label);
+              const dd = String(d.getDate()).padStart(2,'0');
+              const mm = String(d.getMonth()+1).padStart(2,'0');
+              const hh = String(d.getHours()).padStart(2,'0');
+              const mi = String(d.getMinutes()).padStart(2,'0');
+              return `${dd}.${mm}. ${hh}:${mi}`;
+            }
+          }
+        }
       },
       scales:{
-       x: {
-  type: 'time',
-  time: {
-    unit: 'day',
-    stepSize: 1,
-    displayFormats: { day: 'dd.MM.' }
-  },
-  grid: { color:'rgba(255,255,255,.06)' },
-  ticks: {
-    color:'rgba(255,255,255,.55)',
-    maxRotation: 0,
-    autoSkip: true,
-    callback: (v, i, t) => {
-      const d  = new Date(t[i].value);
-      const dd = String(d.getDate()).padStart(2,'0');
-      const mm = String(d.getMonth()+1).padStart(2,'0');
-      return `${dd}.${mm}.`;
-    }
-  }
-},
-
-        y:{ beginAtZero:true, position:'left', grid:{ color:'rgba(255,255,255,.06)' }, ticks:{ color:'#62a8ff' }, title:{ display:true, text:'AQI', color:'#62a8ff' }},
-        y1:{ beginAtZero:true, position:'right', grid:{ drawOnChartArea:false }, ticks:{ color:'#d26bff', callback:v=>`${v}%` }, title:{ display:true, text:'Verkehrsdichte (%)', color:'#d26bff' }},
+        x: {
+          type: 'time',
+          time: {
+            unit: 'day', // Zurück zum Standard (Tag)
+            displayFormats: { day: 'dd.MM.' }
+          },
+          grid: { color:'rgba(255,255,255,.06)' },
+          ticks: {
+            color:'rgba(255,255,255,.55)',
+            maxRotation: 0,
+            autoSkip: true, // Chart.js regelt Platzmangel automatisch
+            callback: (v) => {
+              const d  = new Date(v);
+              const dd = String(d.getDate()).padStart(2,'0');
+              const mm = String(d.getMonth()+1).padStart(2,'0');
+              return `${dd}.${mm}.`;
+            }
+          }
+        },
+        y:{ 
+          beginAtZero:true, 
+          position:'left', 
+          grid:{ color:'rgba(255,255,255,.06)' }, 
+          ticks:{ color:'#62a8ff' }, 
+          // HIER: Titel auf Handy ausblenden!
+          title:{ display: !isMobile, text:'AQI', color:'#62a8ff' }
+        },
+        y1:{ 
+          beginAtZero:true, 
+          position:'right', 
+          grid:{ drawOnChartArea:false }, 
+          ticks:{ color:'#d26bff', callback:v=>`${v}%` }, 
+          // HIER: Titel auf Handy ausblenden!
+          title:{ display: !isMobile, text:'Verkehrsdichte (%)', color:'#d26bff' }
+        },
       }
     }
   });
 }
-// chart Air Quality
+
+// chart Air Quality (NORMAL DATA, NO TITLES ON MOBILE)
 function drawAir(labels, pm25, o3, co){
   if (typeof Chart === 'undefined') return;
   const ctx = ensureCanvas('.view-air .city-chart', 'chart-air');
   if (!ctx) return;
   if (chartAir) chartAir.destroy();
 
+  const isMobile = window.innerWidth < 900;
+
   chartAir = new Chart(ctx, {
     type:'line',
     data:{
       labels,
       datasets:[
-        
         { label:'PM₂.₅ (µg/m³)', data:pm25, borderColor:'#6bbf59', backgroundColor:'rgba(107,191,89,0.20)', borderWidth:2, tension:.3, pointRadius:0, fill:true, yAxisID:'yPM', spanGaps:true },
         { label:'O₃ (µg/m³)',    data:o3,   borderColor:'#ffa046', backgroundColor:'rgba(255,160,70,0.20)', borderWidth:2, tension:.3, pointRadius:0, fill:true, yAxisID:'yO3', spanGaps:true },
         { label:'CO (µg/m³)',    data:co,   borderColor:'#5fb0ff', backgroundColor:'rgba(95,176,255,0.20)', borderWidth:2, tension:.3, pointRadius:0, fill:true, yAxisID:'yCO', spanGaps:true },
       ]
     },
     options:{
-        animations:{
-          x:{ type:'number', duration:0 },
-          y:{
-            type:'number',
-            duration:900,
-            easing:'easeOutCubic',
-            from(ctx){
-              const chart = ctx.chart;
-              const meta  = chart.getDatasetMeta(ctx.datasetIndex);
-              const yId   = meta.yAxisID || 'yPM';           // richtige Y-Achse pro Datensatz
-              const scale = chart.scales[yId];
-              const startVal = Math.max(0, scale.min ?? 0);  // von 0 (oder Achsenminimum) starten
-              return scale.getPixelForValue(startVal);
-            }
-          }
-        },
+      animations:{ x:{ type:'number', duration:0 } },
       responsive:true, maintainAspectRatio:false,
       interaction:{ mode:'index', intersect:false },
       plugins:{
         legend:{ display:true, labels:{ color:'rgba(255,255,255,.75)', boxWidth:16, boxHeight:2 } },
         tooltip:{
-  backgroundColor:'rgba(12,18,32,.95)',
-  borderColor:'rgba(111,189,255,.35)',
-  borderWidth:1,
-  titleColor:'#fff',
-  bodyColor:'rgba(255,255,255,.9)',
-  callbacks:{
-    title(items){
-      const d = new Date(items[0].parsed.x ?? items[0].raw ?? items[0].label);
-      const dd = String(d.getDate()).padStart(2,'0');
-      const mm = String(d.getMonth()+1).padStart(2,'0');
-      const hh = String(d.getHours()).padStart(2,'0'); // <-- 24h-Stunden
-      const mi = String(d.getMinutes()).padStart(2,'0');
-      return `${dd}.${mm}. ${hh}:${mi}`; // z. B. "13.10. 23:00"
-    }
-  }
-}
-
+          backgroundColor:'rgba(12,18,32,.95)',
+          borderColor:'rgba(111,189,255,.35)',
+          borderWidth:1,
+          titleColor:'#fff',
+          bodyColor:'rgba(255,255,255,.9)',
+          callbacks:{
+            title(items){
+              const d = new Date(items[0].parsed.x ?? items[0].raw ?? items[0].label);
+              const dd = String(d.getDate()).padStart(2,'0');
+              const mm = String(d.getMonth()+1).padStart(2,'0');
+              const hh = String(d.getHours()).padStart(2,'0');
+              const mi = String(d.getMinutes()).padStart(2,'0');
+              return `${dd}.${mm}. ${hh}:${mi}`;
+            }
+          }
+        }
       },
       scales:{
-        
-        yO3:{ position:'left',  beginAtZero:true, grid:{ drawOnChartArea:false }, ticks:{ color:'#ffa046' }, title:{ display:true, text:'O₃ (µg/m³)', color:'#ffa046' }},
-        yPM:{ position:'left', beginAtZero:true, grid:{ color:'rgba(255,255,255,.06)' }, ticks:{ color:'#6bbf59' }, title:{ display:true, text:'PM₂.₅ (µg/m³)', color:'#6bbf59' }},
-        yCO:{ position:'right', beginAtZero:true, grid:{ drawOnChartArea:false }, ticks:{ color:'#5fb0ff' }, title:{ display:true, text:'CO (µg/m³)', color:'#5fb0ff' }},
+        yO3:{ 
+          position:'left',  
+          beginAtZero:true, 
+          grid:{ drawOnChartArea:false }, 
+          ticks:{ color:'#ffa046' }, 
+          // HIER: Titel ausblenden
+          title:{ display: !isMobile, text:'O₃ (µg/m³)', color:'#ffa046' }
+        },
+        yPM:{ 
+          position:'left', 
+          beginAtZero:true, 
+          grid:{ color:'rgba(255,255,255,.06)' }, 
+          ticks:{ color:'#6bbf59' }, 
+          // HIER: Titel ausblenden
+          title:{ display: !isMobile, text:'PM₂.₅ (µg/m³)', color:'#6bbf59' }
+        },
+        yCO:{ 
+          position:'right', 
+          beginAtZero:true, 
+          grid:{ drawOnChartArea:false }, 
+          ticks:{ color:'#5fb0ff' }, 
+          // HIER: Titel ausblenden
+          title:{ display: !isMobile, text:'CO (µg/m³)', color:'#5fb0ff' }
+        },
         x: {
-  type: 'time',
-  time: {
-    unit: 'day',
-    stepSize: 1,
-    displayFormats: { day: 'dd.MM.' }
-  },
-  grid: { color:'rgba(255,255,255,.06)' },
-  ticks: {
-    color:'rgba(255,255,255,.55)',
-    maxRotation: 0,
-    autoSkip: true,
-    callback: (v, i, t) => {
-      const d  = new Date(t[i].value);
-      const dd = String(d.getDate()).padStart(2,'0');
-      const mm = String(d.getMonth()+1).padStart(2,'0');
-      return `${dd}.${mm}.`;
-    }
-  }
-}
-
+          type: 'time',
+          time: {
+            unit: 'day', // Standard
+            displayFormats: { day: 'dd.MM.' }
+          },
+          grid: { color:'rgba(255,255,255,.06)' },
+          ticks: {
+            color:'rgba(255,255,255,.55)',
+            maxRotation: 0,
+            autoSkip: true,
+            callback: (v) => {
+              const d  = new Date(v);
+              const dd = String(d.getDate()).padStart(2,'0');
+              const mm = String(d.getMonth()+1).padStart(2,'0');
+              return `${dd}.${mm}.`;
+            }
+          }
+        }
       }
     }
   });
@@ -435,12 +424,11 @@ function showCity(name){
   currentCity = name;
 
   if (!RAW.length){
-  clearNumbers();
-  showNoData('.view-overview .city-chart');
-  showNoData('.view-air .city-chart');
-  return;
-}
-
+    clearNumbers();
+    showNoData('.view-overview .city-chart');
+    showNoData('.view-air .city-chart');
+    return;
+  }
 
   const rowsForCity = RAW
     .filter(r=>Number.isFinite(r.latitude) && Number.isFinite(r.longitude))
@@ -475,53 +463,37 @@ function showCity(name){
       : `Letztes Update: ${ts} • AQI ${latest.us_aqi ?? '—'} • Verkehr ${traf.pct ?? '—'}%`;
   });
 
- let mIdx = -1;
-if (els.monthSelect) {
-  const val = els.monthSelect.value || els.monthSelect.options[els.monthSelect.selectedIndex]?.textContent || '';
-  mIdx = MONTHS_DE.indexOf(val);
-}
-if (mIdx < 0) mIdx = new Date(latest._ts).getMonth();
+  let mIdx = -1;
+  if (els.monthSelect) {
+    const val = els.monthSelect.value || els.monthSelect.options[els.monthSelect.selectedIndex]?.textContent || '';
+    mIdx = MONTHS_DE.indexOf(val);
+  }
+  if (mIdx < 0) mIdx = new Date(latest._ts).getMonth();
 
-// Jahr aus Dropdown (oder aktuelles Jahr als Fallback)
-let year = new Date(latest._ts).getFullYear();
-if (els.yearSelect && els.yearSelect.value) {
-  year = Number(els.yearSelect.value);
-}
-
+  let year = new Date(latest._ts).getFullYear();
+  if (els.yearSelect && els.yearSelect.value) {
+    year = Number(els.yearSelect.value);
+  }
 
   const { labels, aqiSeries, trafSeries, pm25Series, o3Series, coSeries } =
   buildHourlySeries(rowsForCity, year, mIdx);
 
-
   const trimmed = trimToDataWindow(labels, [aqiSeries, trafSeries, pm25Series, o3Series, coSeries]);
+  
+  // WIEDERHERGESTELLT: Keine Filterung der Daten (alle Stunden bleiben erhalten)
   const L = trimmed.labels;
   const [AQI, TRAF, PM, O3, CO] = trimmed.series;
 
   const hasAny = arr => Array.isArray(arr) && arr.some(v => v != null && !Number.isNaN(+v));
+  const anyOverview = hasAny(AQI) || hasAny(TRAF);
+  const anyAir      = hasAny(PM)  || hasAny(O3)   || hasAny(CO);
 
-const anyOverview = hasAny(AQI) || hasAny(TRAF);
-const anyAir      = hasAny(PM)  || hasAny(O3)   || hasAny(CO);
-
-// Overview-Chart
-if (!anyOverview) {
-  showNoData('.view-overview .city-chart');
-} else {
-  drawOverview(L, AQI, TRAF);
-}
-
-// Air-Chart
-if (!anyAir) {
-  showNoData('.view-air .city-chart');
-} else {
-  drawAir(L, PM, O3, CO);
-}
-
-
+  if (!anyOverview) { showNoData('.view-overview .city-chart'); } else { drawOverview(L, AQI, TRAF); }
+  if (!anyAir) { showNoData('.view-air .city-chart'); } else { drawAir(L, PM, O3, CO); }
 }
 
 /* ===== Events ===== */
 els.tabs.forEach(btn => btn.addEventListener('click', () => showView(btn.dataset.view)));
-
 
 document.querySelectorAll('[data-back="overview"]').forEach(btn => {
   btn.addEventListener('click', () => showView('overview'));
@@ -529,6 +501,11 @@ document.querySelectorAll('[data-back="overview"]').forEach(btn => {
 els.btnClose?.addEventListener('click', closePanel);
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
 els.panel?.addEventListener('click', e => { if (e.target === els.panel) closePanel(); });
+
+// Wenn man das Fenster groß/klein zieht, Chart neu laden (damit Filter rein/raus geht)
+window.addEventListener('resize', () => {
+  if(currentCity && RAW.length) showCity(currentCity);
+});
 
 if (els.monthSelect){
   updateMonthPlaceholder();
@@ -543,7 +520,6 @@ if (els.yearSelect) {
     if (currentCity) showCity(currentCity);
   });
 }
-
 
 // Karte – CSS setzt den Cursor, JS nur Logik
 document.querySelectorAll('.map-point').forEach(el=>{
@@ -564,7 +540,6 @@ document.querySelectorAll('.map-point').forEach(el=>{
   const currentMonth = MONTHS_DE[now.getMonth()];
   const currentYear  = now.getFullYear();
 
-  // Monat Dropdown setzen
   if (els.monthSelect) {
     const opt = Array.from(els.monthSelect.options).find(o =>
       (o.value && o.value.trim() === currentMonth) ||
@@ -573,7 +548,6 @@ document.querySelectorAll('.map-point').forEach(el=>{
     if (opt) els.monthSelect.value = opt.value || opt.textContent.trim();
   }
 
-  // Jahr Dropdown setzen
   if (els.yearSelect) {
     const opt = Array.from(els.yearSelect.options).find(o =>
       (o.value && o.value.trim() === String(currentYear)) ||
@@ -581,20 +555,18 @@ document.querySelectorAll('.map-point').forEach(el=>{
     );
     if (opt) els.yearSelect.value = opt.value || opt.textContent.trim();
     else {
-      // Fallback: falls z. B. 2028 nicht im Dropdown ist → letzte Option nehmen
       const last = els.yearSelect.options[els.yearSelect.options.length - 1];
       if (last) els.yearSelect.value = last.value || last.textContent.trim();
     }
   }
 
-  // Platzhalter aktualisieren
   updateMonthPlaceholder();
 })();
+
 // =====================================
 // Smartphone: "Stadt wählen" -> Dropdown (Responsive Switch)
 // =====================================
 (function(){
-  // Tipp: Hier den Wert anpassen, wann der Switch passieren soll (z.B. 900px passend zum CSS)
   const MQ = window.matchMedia("(max-width: 900px)"); 
 
   const VALUE_TO_NAME = {
@@ -612,15 +584,14 @@ document.querySelectorAll('.map-point').forEach(el=>{
     const accentEl = document.querySelector('.hero-copy .headline .accent');
     if (!accentEl) return;
 
-    // Prüfen, ob das Dropdown schon existiert
     let select = document.getElementById('citySelect');
 
-    // 1. Dropdown einmalig erstellen, falls noch nicht da
     if (!select) {
       select = document.createElement('select');
       select.className = 'city-select';
       select.id = 'citySelect';
       
+      // HIER SIND JETZT DIE KORREKTEN BACKTICKS (`)
       select.innerHTML = `
         <option value="">Stadt wählen</option>
         <option value="delhi">Delhi</option>
@@ -633,10 +604,8 @@ document.querySelectorAll('.map-point').forEach(el=>{
         <option value="raipur">Raipur</option>
       `;
 
-      // WICHTIG: Nicht ersetzen (replaceWith), sondern daneben einfügen!
       accentEl.after(select);
 
-      // Event Listener hinzufügen
       select.addEventListener('change', async () => {
         const val = select.value;
         if (!val) return;
@@ -647,22 +616,16 @@ document.querySelectorAll('.map-point').forEach(el=>{
       });
     }
 
-    // 2. Sichtbarkeit umschalten je nach Bildschirmgröße
     if (MQ.matches) {
-      // MOBILE: Text ausblenden, Dropdown zeigen
       accentEl.style.display = 'none';
       select.style.display = 'inline-block';
     } else {
-      // DESKTOP: Text zeigen, Dropdown ausblenden
-      accentEl.style.display = ''; // Setzt es auf Standard zurück (meist inline)
+      accentEl.style.display = '';
       select.style.display = 'none';
     }
   }
 
-  // Initial ausführen
   document.addEventListener('DOMContentLoaded', handleResponsiveLayout);
-  
-  // Bei Größenänderung des Fensters ausführen
   MQ.addEventListener('change', handleResponsiveLayout);
 })();
 
@@ -672,10 +635,4 @@ function resetCityPicker(){
     sel.selectedIndex = 0;
     sel.blur();
   }
-}
-
-function closePanel(){
-  document.body.classList.remove('panel-open');
-  els.panel?.setAttribute('aria-hidden','true');
-  resetCityPicker();
 }
