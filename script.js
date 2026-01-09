@@ -635,4 +635,13 @@ function resetCityPicker(){
     sel.selectedIndex = 0;
     sel.blur();
   }
+<<<<<<< HEAD
+=======
+}
+
+function closePanel(){
+  document.body.classList.remove('panel-open');
+  els.panel?.setAttribute('aria-hidden','true');
+  resetCityPicker();
+>>>>>>> 7b9afe11b2f90717b4b2ddb64634dd498e4ea580
 }
