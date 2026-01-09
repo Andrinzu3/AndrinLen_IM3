@@ -1,5 +1,5 @@
 Projektbeschreibung: Smog Bahārat
-Kurzbeschreibung (ca. 500 Zeichen)
+
 Smog Bahārat ist eine interaktive Webanwendung, die den direkten Zusammenhang zwischen Luftqualität (AQI) und Verkehrsdichte in indischen Metropolen visualisiert. Auf einer dynamischen Karte zeigen pulsierende Indikatoren den aktuellen Belastungszustand von Städten wie Neu-Delhi oder Mumbai in Echtzeit an. Durch Klick auf eine Stadt erhalten Nutzer detaillierte Diagramme und aktuelle Messwerte. Ziel des Projekts ist es, abstrakte Umweltdaten durch ein modernes, dunkles UI-Design greifbar zu machen und ein Bewusstsein für die urbane Situation in Indien zu schaffen.
 
 Entwicklungsprozess & Programmierung
